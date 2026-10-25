@@ -1,21 +1,28 @@
-import { useEffect, useRef } from "react";
+import { RefObject, useEffect, useRef } from "react";
 import { prefersReducedMotion } from "../../env";
-import { Body, DT, HEIGHT, RADIUS, SeaSim, SPACING } from "./seaPhysics";
+import { Body, DT, HEIGHT, Letter, LETTER, RADIUS, SeaSim, SPACING } from "./seaPhysics";
 
 /**
  * The sea at the bottom of the bottle box, drawn on a canvas in the site's style. The simulation lives
  * in seaPhysics.ts: the bottle floats, tilts and bobs on the waves, can be grabbed, swung and thrown,
  * and makes waves and spray when it hits the water. While `away` is set (the letter is being sent)
  * a current carries it off; afterwards a new one drops in.
+ *
+ * The canvas covers the whole box (`box`), so the bottle can be lifted out of the water and thrown
+ * across it; the water stays along the bottom. It doesn't take clicks itself: the box listens and only
+ * catches those that grab the bottle, so the form underneath works as before.
  */
-export function Sea({ away }: { away: boolean }) {
+export function Sea({ away, box }: { away: boolean, box: RefObject<HTMLElement> }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const simRef = useRef<SeaSim | null>(null);
     useEffect(() => { if (simRef.current) simRef.current.away = away; }, [away]);
 
     useEffect(() => {
-        const canvas = canvasRef.current!;
+        const canvas = canvasRef.current!, host = box.current!;
         const ctx = canvas.getContext("2d")!;
+        // The sea's own coordinates start at the top of the water strip (HEIGHT tall, at the bottom of
+        // the box); the strip's top is this far down the canvas.
+        let offset = 0;
         const accent = parseColor(getComputedStyle(canvas).getPropertyValue("--accent")) ?? [90, 125, 176];
         const tint = (alpha: number) => `rgba(${accent.join(", ")}, ${alpha})`;
         const reduced = prefersReducedMotion();
@@ -24,7 +31,9 @@ export function Sea({ away }: { away: boolean }) {
 
         const draw = () => {
             const { width, time } = sim;
-            ctx.clearRect(0, 0, width, HEIGHT);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, width, offset + HEIGHT);
+            ctx.translate(0, offset);
             const wave = (offset: number, phase: number) => {
                 ctx.beginPath();
                 ctx.moveTo(0, HEIGHT);
@@ -38,7 +47,7 @@ export function Sea({ away }: { away: boolean }) {
             ctx.fillStyle = tint(0.08);
             ctx.fill();
 
-            if (sim.bottle) drawBottle(ctx, sim.bottle, tint);
+            if (sim.bottle) drawBottle(ctx, sim.bottle, sim.letter, tint);
 
             // The front water covers the submerged part of the bottle.
             wave(0, 0);
@@ -54,39 +63,47 @@ export function Sea({ away }: { away: boolean }) {
             for (const d of sim.drops) { ctx.beginPath(); ctx.arc(d.x, d.y, 1.6, 0, Math.PI * 2); ctx.fill(); }
         };
 
+        let dpr = 1;
         const resize = () => {
-            const dpr = window.devicePixelRatio || 1;
+            dpr = window.devicePixelRatio || 1;
             sim.resize(canvas.clientWidth);
+            offset = Math.max(0, canvas.clientHeight - HEIGHT);
+            sim.ceiling = -offset + RADIUS + 4; // up to the top of the box
             canvas.width = Math.round(sim.width * dpr);
-            canvas.height = Math.round(HEIGHT * dpr);
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            canvas.height = Math.round((offset + HEIGHT) * dpr);
             draw();
         };
 
         // Pointer: grab and throw the bottle, or stir the water.
         let last: { x: number, y: number } | null = null;
-        const point = (e: PointerEvent) => {
+        const point = (e: { clientX: number, clientY: number }) => {
             const r = canvas.getBoundingClientRect();
-            return { x: e.clientX - r.left, y: e.clientY - r.top };
+            return { x: e.clientX - r.left, y: e.clientY - r.top - offset };
         };
         const onDown = (e: PointerEvent) => {
             const p = point(e), local = sim.hit(p.x, p.y);
             if (local) {
                 sim.grab = { ...local, ...p };
-                canvas.setPointerCapture(e.pointerId);
-                canvas.style.cursor = "grabbing";
+                host.setPointerCapture(e.pointerId);
+                host.style.cursor = "grabbing";
                 e.preventDefault();
-            } else if (p.y > sim.surface(p.x) - 6) {
+            } else if (p.y > sim.surface(p.x) - 6 && p.y < HEIGHT) {
                 sim.push(p.x, 160); // a tap on the water
             }
+        };
+        // On touch screens a finger on the bottle grabs it instead of scrolling the page.
+        const onTouch = (e: TouchEvent) => {
+            const t = e.touches[0];
+            if (t && sim.hit(point(t).x, point(t).y)) e.preventDefault();
         };
         const onMove = (e: PointerEvent) => {
             const p = point(e);
             if (sim.grab) {
                 sim.grab.x = Math.min(sim.width, Math.max(0, p.x));
-                sim.grab.y = Math.min(HEIGHT - 6, Math.max(RADIUS, p.y));
+                sim.grab.y = Math.min(HEIGHT - 6, Math.max(sim.ceiling, p.y));
             } else {
-                canvas.style.cursor = sim.hit(p.x, p.y) ? "grab" : "";
+                const over = !!sim.hit(p.x, p.y);
+                if (over !== (host.style.cursor === "grab")) host.style.cursor = over ? "grab" : "";
                 // Moving through the surface makes small waves.
                 if (last && Math.abs(p.y - sim.surface(p.x)) < 10) {
                     sim.push(p.x, Math.max(-80, Math.min(80, (p.y - last.y) * 6)) + Math.min(25, Math.abs(p.x - last.x) * 0.6));
@@ -95,8 +112,9 @@ export function Sea({ away }: { away: boolean }) {
             last = p;
         };
         const onUp = () => {
+            if (!sim.grab) return;
             sim.grab = null;
-            canvas.style.cursor = "";
+            host.style.cursor = "";
         };
         const onLeave = () => { last = null; };
 
@@ -124,26 +142,28 @@ export function Sea({ away }: { away: boolean }) {
         resize();
 
         if (!reduced) {
-            canvas.addEventListener("pointerdown", onDown);
-            canvas.addEventListener("pointermove", onMove);
-            canvas.addEventListener("pointerup", onUp);
-            canvas.addEventListener("pointercancel", onUp);
-            canvas.addEventListener("pointerleave", onLeave);
+            host.addEventListener("pointerdown", onDown);
+            host.addEventListener("pointermove", onMove);
+            host.addEventListener("pointerup", onUp);
+            host.addEventListener("pointercancel", onUp);
+            host.addEventListener("pointerleave", onLeave);
+            host.addEventListener("touchstart", onTouch, { passive: false });
         }
         return () => {
             stop();
             observer.disconnect();
             resizeObserver.disconnect();
             document.removeEventListener("visibilitychange", onVisibility);
-            canvas.removeEventListener("pointerdown", onDown);
-            canvas.removeEventListener("pointermove", onMove);
-            canvas.removeEventListener("pointerup", onUp);
-            canvas.removeEventListener("pointercancel", onUp);
-            canvas.removeEventListener("pointerleave", onLeave);
+            host.removeEventListener("pointerdown", onDown);
+            host.removeEventListener("pointermove", onMove);
+            host.removeEventListener("pointerup", onUp);
+            host.removeEventListener("pointercancel", onUp);
+            host.removeEventListener("pointerleave", onLeave);
+            host.removeEventListener("touchstart", onTouch);
         };
-    }, []);
+    }, [box]);
 
-    return <canvas ref={canvasRef} className="seaCanvas" style={{ height: HEIGHT }} aria-hidden="true" />;
+    return <canvas ref={canvasRef} className="seaCanvas" aria-hidden="true" />;
 }
 
 // The bottle in the site's style: white glass with a thin accent outline, a rolled-up letter inside.
@@ -164,7 +184,7 @@ const glass = (() => {
     return p;
 })();
 
-function drawBottle(ctx: CanvasRenderingContext2D, b: Body, tint: (alpha: number) => string) {
+function drawBottle(ctx: CanvasRenderingContext2D, b: Body, letter: Letter, tint: (alpha: number) => string) {
     if (!glass) return;
     ctx.save();
     ctx.translate(b.x, b.y);
@@ -177,17 +197,18 @@ function drawBottle(ctx: CanvasRenderingContext2D, b: Body, tint: (alpha: number
     ctx.fillStyle = tint(0.12);
     ctx.fill(glass);
 
-    // Letter
+    // Letter, wherever it has rolled to inside
+    const { halfLength, halfWidth } = LETTER;
     ctx.beginPath();
-    ctx.roundRect(-34, -5.5, 38, 11, 5.5);
+    ctx.roundRect(letter.u - halfLength, letter.v - halfWidth, halfLength * 2, halfWidth * 2, halfWidth);
     ctx.fillStyle = "#fff";
     ctx.fill();
     ctx.strokeStyle = tint(0.45);
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(-15, -5.5);
-    ctx.lineTo(-15, 5.5);
+    ctx.moveTo(letter.u, letter.v - halfWidth);
+    ctx.lineTo(letter.u, letter.v + halfWidth);
     ctx.strokeStyle = tint(0.85);
     ctx.lineWidth = 1.6;
     ctx.stroke();

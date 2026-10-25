@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LENGTH, REST, SeaSim } from "./seaPhysics";
+import { LENGTH, LETTER, REST, SeaSim } from "./seaPhysics";
 
 // Deterministic "random" for spray.
 const seeded = () => { let s = 1; return () => (s = (s * 16807) % 2147483647) / 2147483647; };
@@ -52,5 +52,26 @@ describe("sea physics", () => {
         expect(b).not.toBeNull();
         expect(b.x).toBeLessThan(530 - LENGTH / 2 + 1);
         expect(Math.abs(b.y - REST)).toBeLessThan(10);
+    });
+
+    it("lets the letter slide inside the bottle, staying inside it", () => {
+        const sim = new SeaSim(530, seeded());
+        sim.advance(1);
+        const b = sim.bottle!;
+        // Hold the bottle neck-down: the letter slides towards the neck.
+        sim.grab = { lx: -30, ly: 0, x: 200, y: -60 };
+        sim.advance(2);
+        const towardsNeck = sim.letter.u;
+        // Neck up: it slides back towards the base.
+        sim.grab = { lx: 30, ly: 0, x: 200, y: -60 };
+        sim.advance(2);
+        expect(sim.letter.u).toBeLessThan(towardsNeck);
+        for (let k = 0; k < 200; k++) {
+            sim.advance(0.05);
+            expect(sim.letter.u).toBeGreaterThanOrEqual(LETTER.minU);
+            expect(sim.letter.u).toBeLessThanOrEqual(LETTER.maxU);
+            expect(Math.abs(sim.letter.v)).toBeLessThanOrEqual(LETTER.maxV);
+        }
+        expect(b).toBeTruthy();
     });
 });

@@ -1,4 +1,5 @@
 .bottle {
+  position: relative; // holds the sea's canvas, which lies over the whole box
   max-width: 600px;
   margin: 0;
   padding: clamp(1.25rem, 4vw, 1.75rem);
@@ -56,9 +57,19 @@
   // The sea along the bottom edge of the box, with a bottle you can grab and throw (Sea.tsx).
   .sea {
     --pad: clamp(1.25rem, 4vw, 1.75rem);
+    height: 104px; // HEIGHT in seaPhysics.ts
     margin: 0.25rem calc(-1 * var(--pad)) calc(-1 * var(--pad));
   }
-  .seaCanvas { display: block; width: 100%; touch-action: none; }
+  // Over everything in the box, so a lifted bottle flies over the form; clicks go through to the form
+  // (the box decides whether a click grabs the bottle).
+  .seaCanvas {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
 
   .sendRow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 0.6rem; }
   .send {

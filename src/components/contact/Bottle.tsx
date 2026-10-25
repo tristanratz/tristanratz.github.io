@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { prefersReducedMotion } from "../../env";
 import { useUi } from "../../i18n";
 import { useRoute } from "../../router";
@@ -46,6 +46,7 @@ export function Bottle({ email }: { email: string }) {
     };
     const untouched = !message.trim() || message === ui.templates[topic];
     const [state, setState] = useState<"idle" | "sailing" | "sent">("idle");
+    const formRef = useRef<HTMLFormElement>(null);
 
     const send = (e: FormEvent) => {
         e.preventDefault();
@@ -60,7 +61,7 @@ export function Bottle({ email }: { email: string }) {
     };
 
     return (
-        <form className={"bottle " + state} onSubmit={send}>
+        <form className={"bottle " + state} onSubmit={send} ref={formRef}>
             <div className="bottleHead">
                 <h3>{ui.title}</h3>
                 {clock && <p className={"clock " + clock.status}><span className="dot" />{ui.time(clock.time)} · {ui.status[clock.status]}</p>}
@@ -84,9 +85,9 @@ export function Bottle({ email }: { email: string }) {
                 {state === "sent" && <p className="sent" role="status">{ui.sent}</p>}
             </div>
 
-            <div className="sea">
-                <Sea away={state !== "idle"} />
-            </div>
+            {/* The water's strip along the bottom; the sea's canvas lies over the whole box (Sea.tsx). */}
+            <div className="sea" />
+            <Sea away={state !== "idle"} box={formRef} />
         </form>
     );
 }

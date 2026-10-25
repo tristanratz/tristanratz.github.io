@@ -21,6 +21,10 @@ const BUOYANCY = MASS * GRAVITY * 2.2 / SAMPLES.length; // per fully submerged s
 const DRAG = MASS * 16 / SAMPLES.length;
 
 export interface Body { x: number, y: number, a: number, vx: number, vy: number, w: number }
+/** The rolled-up letter inside the bottle, in the bottle's own frame (u along the axis, v across). */
+export interface Letter { u: number, v: number, vu: number, vv: number }
+// Where the letter's centre can go: the inside of the bottle's body, less the letter's own size.
+export const LETTER = { minU: -22, maxU: -4, maxV: 3, halfLength: 19, halfWidth: 5.5 };
 export interface Drop { x: number, y: number, vx: number, vy: number }
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -36,6 +40,9 @@ export class SeaSim {
     grab: { lx: number, ly: number, x: number, y: number } | null = null;
     /** A current carries the bottle off to the right (while the letter is being sent). */
     away = false;
+    letter: Letter = { u: -15, v: 0, vu: 0, vv: 0 };
+    /** Highest the bottle can go (y grows downwards; negative: above the sea, up into the box). */
+    ceiling = RADIUS;
     random: () => number;
 
     constructor(width: number, random = Math.random) {
@@ -158,25 +165,51 @@ export class SeaSim {
             const vx = b.vx - b.w * (ay - b.y), vy = b.vy + b.w * (ax - b.x);
             force(ax, ay, MASS * 420 * (g.x - ax) - MASS * 34 * vx, MASS * 420 * (g.y - ay) - MASS * 34 * vy);
         }
+        const vx0 = b.vx, vy0 = b.vy;
         b.vx = clamp((b.vx + fx / MASS * DT) * (1 - 0.25 * DT), -2500, 2500);
         b.vy = clamp((b.vy + fy / MASS * DT) * (1 - 0.25 * DT), -2500, 2500);
         b.w = clamp((b.w + torque / INERTIA * DT) * (1 - 0.6 * DT), -25, 25);
         b.x += b.vx * DT;
         b.y += b.vy * DT;
         b.a += b.w * DT;
+        this.moveLetter(b, (b.vx - vx0) / DT, (b.vy - vy0) / DT);
 
         // Soft walls left, right (open while the bottle sails off) and on top.
         const reach = Math.abs(cos) * LENGTH / 2 + Math.abs(sin) * RADIUS;
         if (b.x - reach < 0) { b.x = reach; b.vx = Math.abs(b.vx) * 0.35; }
         if (!this.away && b.x + reach > this.width) { b.x = this.width - reach; b.vx = -Math.abs(b.vx) * 0.35; }
         if (b.y > HEIGHT - 4) { b.y = HEIGHT - 4; b.vy = Math.min(0, b.vy); }
-        if (b.y < RADIUS && !this.grab) { b.y = RADIUS; b.vy = Math.abs(b.vy) * 0.3; } // stays in view when thrown
+        if (b.y < this.ceiling && !this.grab) { b.y = this.ceiling; b.vy = Math.abs(b.vy) * 0.3; } // stays in view when thrown
         if (this.away && b.x - reach > this.width + 10) this.bottle = null;
+    }
+
+    /**
+     * The letter rolls about inside the bottle. Seen from the bottle it feels gravity minus the bottle's
+     * own acceleration (so it's flung against the glass when the bottle is thrown or stops short) and the
+     * pull outwards when the bottle spins; it slides with some friction and bounces off the glass.
+     */
+    private moveLetter(b: Body, ax: number, ay: number) {
+        const L = this.letter;
+        const ex = -clamp(ax, -20000, 20000), ey = GRAVITY - clamp(ay, -20000, 20000);
+        const c = Math.cos(b.a), s = Math.sin(b.a), spin = b.w * b.w;
+        L.vu += (ex * c + ey * s + spin * L.u) * DT;
+        L.vv += (-ex * s + ey * c + spin * L.v) * DT;
+        const friction = 1 - 4 * DT;
+        L.vu *= friction;
+        L.vv *= friction;
+        L.u += L.vu * DT;
+        L.v += L.vv * DT;
+        if (L.u < LETTER.minU) { L.u = LETTER.minU; L.vu = Math.abs(L.vu) * 0.35; }
+        if (L.u > LETTER.maxU) { L.u = LETTER.maxU; L.vu = -Math.abs(L.vu) * 0.35; }
+        if (Math.abs(L.v) > LETTER.maxV) { L.v = Math.sign(L.v) * LETTER.maxV; L.vv = -L.vv * 0.35; }
     }
 
     /** Advances by `seconds` in fixed steps; brings a new bottle once the old one has sailed off. */
     advance(seconds: number) {
         for (let n = Math.round(seconds / DT); n > 0; n--) this.step();
-        if (!this.bottle && !this.away) this.bottle = this.spawn(true);
+        if (!this.bottle && !this.away) {
+            this.bottle = this.spawn(true);
+            this.letter = { u: -15, v: 0, vu: 0, vv: 0 };
+        }
     }
 }
