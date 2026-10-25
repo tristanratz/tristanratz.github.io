@@ -1,55 +1,57 @@
-@import "../../variables";
-
 .contact {
-  background: $accentColor;
-  width: 100%;
-  color: white;
-  overflow: hidden;
+  background: linear-gradient(var(--bg), var(--bg-alt) 14rem);
 
-  .contentWrapper {
-    margin: auto auto;
-    flex-flow: row wrap;
-    align-content: stretch;
-    justify-content: space-around;
-    width: 100%;
-    max-width: 2000px;
-    padding-bottom: 100px;
+  // Sized to fit the left column next to the message in a bottle.
+  .display { font-size: clamp(3.2rem, 7vw, 5.5rem); margin: 0.5rem 0 1.5rem; }
 
-    h1, h3, p, label, div {
-      text-align: center;
-      display: block;
-    }
+  // Contact details on the left, the message in a bottle next to them.
+  .contactGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: 2.5rem 4rem;
+    align-items: start;
+    @media (max-width: 860px) { grid-template-columns: 1fr; }
+  }
+  .contactFacts:last-child { margin-bottom: 0; }
 
-    .imprint {
-      margin-top: 100px;
-      transition: opacity 0.2s;
+  .contactMail {
+    display: inline-block;
+    font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+    font-weight: 550;
+    border-bottom: 2px solid var(--accent);
+    overflow-wrap: anywhere;
+    &:hover { color: var(--accent); }
+  }
+
+  .contactFacts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 3rem;
+    margin: 2.5rem 0;
+    dt { margin-bottom: 0.3rem; }
+    dd { margin: 0; }
+  }
+
+  .legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.85rem;
+    color: var(--muted);
+
+    a { margin-left: auto; &:hover { color: var(--text); } }
+
+    button {
+      background: none;
+      border: none;
+      padding: 0;
+      color: inherit;
       cursor: pointer;
-
-      &:hover {
-        opacity: 0.5;
-      }
+      &:hover { color: var(--text); }
     }
-
-    label {
-      margin: 0 auto;
-      text-transform: uppercase;
-      font-size: 0.8rem;
-      font-weight: bolder;
-      color: rgba(255, 255, 255, 0.5);
-
-      a:link, a:hover, a:visited {
-        margin: inherit;
-        text-transform: inherit;
-        font-size: inherit;
-        font-weight: inherit;
-        color: inherit;
-        text-decoration: none;
-      }
-    }
-
-    p, a {
-      font-size: 1rem;
-    }
-
   }
 }

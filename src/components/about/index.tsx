@@ -1,163 +1,75 @@
-import React, {RefObject} from 'react';
+import { ReactNode } from "react";
+import {
+    IoBriefcaseOutline, IoChatbubblesOutline, IoDesktopOutline, IoHeartOutline, IoLocationOutline, IoStarOutline,
+} from "react-icons/io5";
+import { useReveal } from "../../hooks/useReveal";
+import portrait from "../../rsc/tristan.jpg";
+import { useUi } from "../../i18n";
+import { useRoute } from "../../router";
+import { getPerson } from "../../store/person";
+import { Icons } from "../Icons";
 import "./style.scss";
-import {Icons} from "../Icons";
-import Fade from "react-reveal/Fade";
-import {person} from "../../store/person";
-import Aboutcards from "./aboutcards";
 
-interface Props {}
+interface CardProps { id: string, icon: ReactNode, label: string, index: number, children: ReactNode }
 
-interface State {
-    wrapperWidth: number;
-    wrapperHeight: number;
-    wrap: number;
-    imageStyle: React.CSSProperties
+/** `id` stays the same in every language: the search jumps to it (e.g. "about-languages"). */
+function InfoCard({ id, icon, label, index, children }: CardProps) {
+    const ref = useReveal<HTMLDivElement>();
+    return (
+        <div ref={ref} id={"about-" + id} className="infoCard reveal" style={{ transitionDelay: `${index * 70}ms` }}>
+            {icon}
+            <h3>{label}</h3>
+            {children}
+        </div>
+    );
 }
 
-export class About extends React.Component<Props, State> {
+export function About() {
+    const ref = useReveal<HTMLElement>();
+    const ui = useUi().about;
+    const person = getPerson(useRoute().route.lang);
 
-    wrappingElement: RefObject<HTMLDivElement>;
-    imageElement: RefObject<HTMLDivElement>;
-    textWrapper: RefObject<HTMLDivElement>;
-    textWidth: number;
-    textHeight: number;
-    textOffset: number;
-
-    constructor(props: Props) {
-        super(props);
-        this.wrappingElement = React.createRef();
-        this.imageElement = React.createRef();
-        this.textWrapper = React.createRef();
-
-        this.state = {
-            wrapperWidth: 0,
-            wrapperHeight: 0,
-            wrap: 0,
-            imageStyle: {}
-        };
-
-        this.textWidth = 0;
-        this.textHeight = 0;
-        this.textOffset = 0;
-
-        this.handleResize = this.handleResize.bind(this);
-        this.updateStyles = this.updateStyles.bind(this);
-        window.addEventListener('resize', this.handleResize);
-    }
-
-    handleResize() {
-        if (this.textWrapper.current! && this.imageElement.current!) {
-            if (this.textWrapper.current!.getBoundingClientRect().y >
-                this.imageElement.current!.getBoundingClientRect().y &&
-                this.state.wrap !== 0) {
-                this.setState({
-                    wrap: 0
-                });
-                this.forceUpdate();
-            } else if (
-                this.textWrapper.current!.getBoundingClientRect().y <
-                this.imageElement.current!.getBoundingClientRect().y &&
-                this.state.wrap !== 1
-            ) {
-                this.setState({
-                    wrap: 1
-                });
-            }
-        }
-        this.updateStyles();
-    }
-
-    updateStyles() {
-        const textHeight = (this.textWrapper.current) ? this.textWrapper.current!.getBoundingClientRect().height : -1;
-        const textWidth = (this.textWrapper.current) ? this.textWrapper.current!.getBoundingClientRect().width : -1;
-        const imageHeight = (this.state.wrap === 1) ? `${textHeight*0.9}px` : `${textWidth*(1/0.75)}px`;
-        const imageWidth = (this.state.wrap === 0) ? `${textWidth*0.9}px` : `${textWidth}px`;
-
-        const imageStyle = {
-            height: imageHeight,
-            width: imageWidth,
-            margin: (this.state.wrap === 1) ? "0 0 auto" : "0 auto auto",
-            float: (this.state.wrap === 1) ? "right" : "unset",
-            transform: "translate3d(" + (this.state.wrap*(window.innerWidth)/32) + "px, " +
-            ((1-this.state.wrap)*(window.innerHeight)/32)
-            + "px, 0)",
-            backgroundImage: "url(" + person.image + ")"
-        } as React.CSSProperties
-
-        if (this.state.imageStyle.height !== imageHeight || this.state.imageStyle.width !== imageWidth ||
-            (this.wrappingElement.current && this.wrappingElement.current!.offsetHeight !== this.state.wrapperHeight) ||
-            (this.wrappingElement.current && this.wrappingElement.current!.offsetWidth !== this.state.wrapperWidth)
-        ) {
-            this.setState({
-                wrapperWidth: (this.wrappingElement.current) ? this.wrappingElement.current!.offsetWidth : 0,
-                wrapperHeight: (this.wrappingElement.current) ? this.wrappingElement.current!.offsetHeight : 0,
-                imageStyle: imageStyle
-            });
-        }
-    }
-
-    mouseMoved(e: React.MouseEvent): void {
-        this.handleResize();
-    }
-
-    componentDidMount(): void {
-        this.handleResize();
-    }
-
-    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any): void {
-        this.handleResize();
-    }
-
-    shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
-        console.log(nextState);
-        return !(!!this.state.imageStyle.width) || nextState !== this.state || nextProps !== this.props
-    }
-
-    render(): React.ReactElement {
-        const imageStyle = this.state.imageStyle;
-
-        return (
-            <div className="about" id="about" onMouseMove={this.mouseMoved.bind(this)}>
-                <h1>About</h1>
-                <div className="contentWrapper" ref={this.wrappingElement}>
-                    <Fade left>
-                        <div className="left">
-                            <div ref={this.imageElement} className="image" style={imageStyle} />
+    return (
+        <section className="section about" id="about">
+            <div className="container">
+                <article className="profileCard reveal" id="profile" ref={ref}>
+                    <header className="profileHead">
+                        <img className="portrait" src={portrait} alt={ui.portrait(`${person.firstName} ${person.lastName}`)}
+                             width={112} height={112} loading="lazy" />
+                        <div>
+                            <h2>{person.firstName} {person.lastName}</h2>
+                            <p>{person.job}</p>
+                            <Icons />
                         </div>
-                    </Fade>
-                    <div className="right" ref={this.textWrapper}>
-                        <div className="wrapper" ref={(e) => {
-                            this.textOffset = (e) ? e.offsetHeight : 0;
-                            this.textHeight = (e) ? e.offsetHeight : 0;
-                            this.textWidth = (e) ? e.offsetWidth : 0;
-                        }
-                        }>
-                            <Fade cascade right>
-                                <div>
-                                    <label>Name</label>
-                                    <p>{person.firstName} {person.lastName}</p>
+                    </header>
 
-                                    <label>About</label>
-                                    <div className="paragraph">
-                                        {person.about.map((paragraph,i) => (
-                                            <p key={i}>
-                                                {paragraph}
-                                            </p>
-                                        ))}
-                                    </div>
-                                    <label>Mail</label>
-                                    <p>
-                                        <a className="contact" href={"mailto:" +person.email}>{person.email}</a>
-                                    </p>
-                                    <label>Links</label>
-                                    <div className="paragraph"><Icons /></div>
-                                </div>
-                            </Fade>
-                        </div>
+                    <div className="profileText">
+                        {person.about.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
                     </div>
+
+                </article>
+
+                <div className="infoCards">
+                    <InfoCard id="based-in" index={0} icon={<IoLocationOutline />} label={ui.basedIn}>
+                        <p><strong>{person.city}</strong>{person.locationHint && ` ${person.locationHint}`},<br />{person.state}, {person.country}</p>
+                    </InfoCard>
+                    <InfoCard id="working-at" index={1} icon={<IoBriefcaseOutline />} label={ui.workingAt}>
+                        <p><strong>{person.employer}</strong> {ui.as}<br />{person.job}</p>
+                    </InfoCard>
+                    <InfoCard id="languages" index={2} icon={<IoChatbubblesOutline />} label={ui.languages}>
+                        <p>{person.languages.map((l, i) => <span key={l.name}>{i > 0 && <br />}{l.name} ({l.level})</span>)}</p>
+                    </InfoCard>
+                    <InfoCard id="qualities" index={3} icon={<IoStarOutline />} label={ui.qualities}>
+                        <p>{person.qualities.map((q, i) => <span key={q}>{i > 0 && <br />}{i === 0 ? <strong>{q}</strong> : q}</span>)}</p>
+                    </InfoCard>
+                    <InfoCard id="technologies" index={4} icon={<IoDesktopOutline />} label={ui.technologies}>
+                        <p>{person.favTec.join(", ")}</p>
+                    </InfoCard>
+                    <InfoCard id="interests" index={5} icon={<IoHeartOutline />} label={ui.interests}>
+                        <p>{person.interests.map((t, i) => <span key={t}>{i > 0 && <br />}{t}</span>)}</p>
+                    </InfoCard>
                 </div>
-                <Aboutcards />
             </div>
-        );
-    }
+        </section>
+    );
 }

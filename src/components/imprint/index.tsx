@@ -1,32 +1,16 @@
-import React from "react";
-import "./style.scss"
-import Fade from "react-reveal/Fade";
 import retrieveImprint from "../../store/imprint";
-import {IoMdClose} from "react-icons/io";
+import { Modal } from "../modal";
+import "./style.scss";
 
 interface Props {
-    visible: boolean;
-    onClick: () => void;
+    open: boolean;
+    onClose: () => void;
 }
 
-export default class Imprint extends React.Component<Props> {
-    render(): React.ReactElement | undefined {
-        if (retrieveImprint()) {
-            return (
-                <div className="imprintComponent" id="imprint" onClick={this.props.onClick}>
-                    <Fade collapse when={this.props.visible}>
-                        <div className="overlay">
-                            <Fade bottom collapse when={this.props.visible}>
-                                <div className="imprintWrapper">
-                                    <div className="closeButton"><IoMdClose/></div>
-                                    <div className="contentWrapper">
-                                        {retrieveImprint()}
-                                    </div>
-                                </div>
-                            </Fade>
-                        </div>
-                    </Fade>
-                </div>);
-        } else return undefined
-    }
+export function Imprint({ open, onClose }: Props) {
+    return (
+        <Modal open={open} onClose={onClose} label="Imprint and privacy">
+            <div className="imprintContent">{retrieveImprint()}</div>
+        </Modal>
+    );
 }

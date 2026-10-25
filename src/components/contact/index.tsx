@@ -1,72 +1,52 @@
-import React from "react";
-import "./style.scss"
-import {Icons} from "../Icons";
-import Fade from "react-reveal/Fade";
-import {person} from "../../store/person";
-import Imprint from "../imprint";
-import retrieveImprint from "../../store/imprint";
+import { useState } from "react";
+import { useReveal } from "../../hooks/useReveal";
+import { useUi } from "../../i18n";
+import { routePath, useRoute } from "../../router";
+import { getPerson } from "../../store/person";
+import { Icons } from "../Icons";
+import { Imprint } from "../imprint";
+import { Bottle } from "./Bottle";
+import "./style.scss";
 
-interface Props {}
-interface State {
-    showImprint: boolean;
-}
+export function Contact() {
+    const ui = useUi();
+    const { route } = useRoute();
+    const person = getPerson(route.lang);
+    const other = route.lang === "de" ? "en" : "de";
+    const [showImprint, setShowImprint] = useState(false);
+    const ref = useReveal<HTMLDivElement>();
 
-export class Contact extends React.Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-
-        this.state = {
-            showImprint: false
-        }
-    }
-
-    render(): React.ReactElement {
-        return (
-            <div className="contact"  id="contact">
-                <Fade>
-                    <div className="contentWrapper">
-                        <h1>Contact</h1>
-                        <p>
-                            Please feel free to contact me.<br />
-                        </p>
-                        <p>
-                            <label>Mail</label>
-                            <a className="contact" href={"mailto:" + person.email}>{person.email}</a>
-                        </p>
-                        {person.phone && (
-                            <p>
-                                <label>Telephone</label>
-                                {person.phone}<br />
-                                {(person.phoneHours) ? person.phoneHours : null }
-                            </p>
-                        )}
-                        <p>
-                            <label>Area</label>
-                            {person.city}, {person.country}
-                        </p>
-                        <div className="paragraph">
-                            <label>Links</label>
-                            <Icons />
+    return (
+        <footer className="section contact" id="contact">
+            <div className="container reveal" ref={ref}>
+                <div className="contactGrid">
+                <div className="contactDetails">
+                <p className="eyebrow">{ui.contact.eyebrow}</p>
+                <h2 className="display">{ui.contact.title[0]}<em>{ui.contact.title[1]}</em></h2>
+                <a className="contactMail" href={"mailto:" + person.email}>{person.email}</a>
+                <dl className="contactFacts">
+                    {person.phone && (
+                        <div>
+                            <dt className="eyebrow">{ui.contact.telephone}</dt>
+                            <dd>{person.phone}{person.phoneHours && <><br />{person.phoneHours}</>}</dd>
                         </div>
-
-                        {retrieveImprint() &&
-                            <p className="imprint"
-                               onClick={() => this.setState({showImprint: true})}>
-                                Imprint & Privacy
-                            </p>
-                        }
-
-                        <label>
-                            <a href={person.website}>
-                                © by {person.firstName} {person.lastName}
-                            </a>
-                        </label>
+                    )}
+                    <div>
+                        <dt className="eyebrow">{ui.contact.area}</dt>
+                        <dd>{person.city}, {person.country}</dd>
                     </div>
-                </Fade>
-                {retrieveImprint() &&
-                    <Imprint visible={this.state.showImprint}
-                             onClick={() => this.setState({showImprint: false})}/>
-                }
-            </div>);
-    }
+                </dl>
+                <Icons />
+                </div>
+                <Bottle email={person.email} />
+                </div>
+                <div className="legal">
+                    <span>© {new Date().getFullYear()} {person.firstName} {person.lastName}</span>
+                    <a href={routePath({ ...route, lang: other })} hrefLang={other} lang={other}>{ui.language.switchTo}</a>
+                    <button onClick={() => setShowImprint(true)}>{ui.contact.imprint}</button>
+                </div>
+            </div>
+            <Imprint open={showImprint} onClose={() => setShowImprint(false)} />
+        </footer>
+    );
 }

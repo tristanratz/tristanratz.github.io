@@ -1,0 +1,133 @@
+.bottle {
+  max-width: 600px;
+  margin: 0;
+  padding: clamp(1.25rem, 4vw, 1.75rem);
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  overflow: hidden;
+
+  h3 { margin: 0 0 0.35rem; font-size: 1.15rem; letter-spacing: -0.02em; }
+  .bottleIntro { margin: 0.5rem 0 1.1rem; font-size: 0.88rem; color: var(--muted); }
+
+  .clock {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #3f9d6b; box-shadow: 0 0 0 3px rgba(63, 157, 107, 0.18); }
+    &.evening .dot, &.weekend .dot { background: #e08f56; box-shadow: 0 0 0 3px rgba(224, 143, 86, 0.18); }
+    &.night .dot { background: var(--muted); box-shadow: none; }
+  }
+
+  .topics { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0.8rem; }
+  .topics button {
+    padding: 7px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover { color: var(--text); border-color: var(--accent); }
+    &[aria-pressed="true"] { color: var(--text); background: var(--accent-soft); border-color: transparent; }
+  }
+
+  textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 84px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.95rem;
+    &:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  }
+
+  // The sea with the bottle bobbing on it.
+  .sea {
+    position: relative;
+    height: 56px;
+    margin: 0.4rem calc(-1 * clamp(1.25rem, 4vw, 1.75rem)) 0;
+
+    .waves {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 200%;
+      height: 40px;
+      animation: waves 7s linear infinite;
+      path { fill: var(--accent); }
+      &.back { opacity: 0.12; animation-duration: 11s; }
+      &.front { opacity: 0.22; bottom: -6px; }
+    }
+
+    .bottleShape {
+      position: absolute;
+      left: 12%;
+      bottom: 14px;
+      width: 56px;
+      height: 26px;
+      animation: bob 3.2s ease-in-out infinite;
+      .glass { fill: color-mix(in srgb, var(--accent) 35%, white); stroke: var(--accent); stroke-width: 1.2; }
+      .cork { fill: #b98a5a; }
+      .note { fill: #f4ead2; }
+    }
+  }
+
+  .sendRow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 0.6rem; }
+  .send {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 999px;
+    background: var(--text);
+    color: var(--bg);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    &:disabled { opacity: 0.35; cursor: default; }
+  }
+  .sent { margin: 0; font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+
+  // Sending: the bottle drifts off to the right and the sea picks up.
+  &.sailing {
+    .bottleShape { animation: driftOff 1.6s cubic-bezier(0.5, 0, 0.6, 1) forwards; }
+    .waves { animation-duration: 2.5s; }
+  }
+  &.sent .bottleShape { opacity: 0; animation: none; }
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes waves { to { transform: translateX(-50%); } }
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-5px) rotate(4deg); }
+}
+@keyframes driftOff {
+  0% { transform: translateY(0) rotate(-6deg); opacity: 1; }
+  30% { transform: translate(15vw, -8px) rotate(6deg); }
+  60% { transform: translate(35vw, -2px) rotate(-5deg); }
+  100% { transform: translate(60vw, -6px) rotate(4deg); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottle .waves, .bottle .bottleShape { animation: none !important; }
+}

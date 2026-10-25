@@ -1,0 +1,70 @@
+.modal {
+  width: min(760px, calc(100% - 32px));
+  max-height: min(88svh, 900px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  overscroll-behavior: contain;
+
+  &::backdrop {
+    background: rgba(8, 12, 20, 0.45);
+    backdrop-filter: blur(6px);
+  }
+
+  &[open] { animation: modalIn 0.35s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  // Morphing dialogs are animated by the view transition instead.
+  @supports (view-transition-name: none) {
+    &.morph[open] { animation: none; }
+  }
+}
+
+// Hints at the top and the end of the content; they light up while pulling past that edge.
+.modal.pullable {
+  &::before, &::after {
+    display: block;
+    height: 0;
+    overflow: visible;
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    opacity: 0.55;
+    pointer-events: none;
+    transition: opacity 0.2s, color 0.2s;
+  }
+  &::before { content: attr(data-pull-down); translate: 0 14px; }
+  &::after { content: attr(data-pull-up); translate: 0 -30px; }
+
+  &[data-pull="top"]::before,
+  &[data-pull="bottom"]::after {
+    opacity: calc(0.55 + 0.45 * var(--pull, 0));
+    color: var(--accent);
+    scale: calc(1 + 0.15 * var(--pull, 0));
+    transition: none;
+  }
+}
+
+.modalInner {
+  position: relative;
+  padding: clamp(1.5rem, 5vw, 3rem);
+}
+
+.modalClose {
+  position: sticky;
+  top: 0;
+  float: right;
+  margin: -0.5rem -0.5rem 0 1rem;
+  z-index: 1;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal[open] { animation: none; }
+}

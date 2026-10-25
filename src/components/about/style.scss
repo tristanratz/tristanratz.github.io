@@ -1,126 +1,103 @@
-@import "../../variables";
-
 .about {
-  width: 100%;
-  background: $accentColor;
-  overflow: hidden;
-  padding: 0 10vw 10vw;
-  color: white;
-  box-sizing: border-box;
+  // Fades in and out of the neighbouring sections instead of a hard edge.
+  background: linear-gradient(var(--bg), var(--bg-alt) 14rem, var(--bg-alt) calc(100% - 14rem), var(--bg));
 
-  h1 {
-    font-weight: bolder;
-    text-align: center;
-    padding-bottom: 3rem;
+  .container { max-width: 1000px; }
+}
+
+.profileCard,
+.infoCard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.profileCard {
+  padding: clamp(1.75rem, 6vw, 3.5rem);
+}
+
+.profileHead {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--line);
+
+  .portrait {
+    width: 112px;
+    height: 112px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 12px;
+    filter: grayscale(1) contrast(1.05);
   }
 
-  .contentWrapper {
-    color: white;
-    display: flex;
-    flex-flow: row wrap;
-    align-content: stretch;
-    justify-content: space-around;
-    width: 100%;
-    max-width: 2000px;
-    margin: auto auto;
-    padding-bottom: 2rem;
-
-    .left, .right {
-      flex-grow: 1;
-      flex-shrink: 1;
-      width: 50vh;
-    }
-
-    &.aboutCards {
-      box-sizing: border-box;
-      padding-top: 12rem;
-
-      .card {
-        color: $accentColor;
-        flex-shrink: 1;
-        flex-grow: 1;
-        width: 300px;
-        background: white;
-        margin: 20px;
-        padding: 2rem;
-        text-align: center;
-        border-radius: 5px;
-        opacity: 0.8;
-        transition: transform 0.2s, opacity 0.2s;
-
-        svg {
-          display: block;
-          margin: 1rem auto 2rem;
-          font-size: 3rem;
-        }
-
-        &:hover {
-          opacity: 1;
-          transform: translateY(-5px) scale(1.01);
-        }
-
-        label {
-          text-transform: uppercase;
-          font-size: 0.8rem;
-          font-weight: bolder;
-          color: rgba(0,0,0,0.5);
-        }
-      }
-    }
-
-    .left {
-      //width: 50vw;
-      margin: auto auto;
-      background: rgba(255,255,255,0.00);
-      color: rgba(255,255,255,0.01);
-      box-sizing: border-box;
-      //box-shadow: inset -10px 10px 50px rgba(0,0,0,0.5);
-
-      .image {
-        box-shadow: 0 0 20px rgba(0,0,0,0.2);
-        z-index: 4;
-        background-repeat: no-repeat;
-        background-size: cover;
-        background-position: center;
-        border-radius: 5px;
-        transition: transform 0.1s;
-      }
-
-    }
-
-    .right .wrapper {
-      //width: 25vw;
-      //min-width: 12.5vh;
-      padding: 10vw;
-      text-align: justify;
-      margin: auto auto;
-      color: $accentColor;
-      background: white;
-      z-index: 1;
-
-
-      label {
-        text-transform: uppercase;
-        font-size: 0.8rem;
-        font-weight: bolder;
-        opacity: 0.5;
-      }
-
-      a {
-        background: transparent;
-      }
-
-      .contact {
-        font-size: inherit;
-        padding-left: 0;
-      }
-
-      .paragraph {
-        a {
-          padding-left: 0;
-          padding-right: 0.7rem;
-        }
-      }
-    }
+  h2 {
+    margin: 0 0 0.3rem;
+    font-size: clamp(1.6rem, 4vw, 2.1rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
   }
+
+  p { margin: 0; font-size: 0.95rem; color: var(--muted); }
+  .icons { margin-top: 1rem; }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.profileText {
+  padding: 2rem 0 0.5rem;
+  max-width: 62ch;
+  font-size: 1.08rem;
+  line-height: 1.7;
+
+  p { margin: 0 0 1.1em; }
+}
+
+
+// Card grid inspired by the previous version of the site.
+.infoCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.infoCard {
+  padding: 2rem 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.6;
+
+  // Combine the reveal fade with the hover lift.
+  &.reveal { transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.2s; }
+  &.reveal.is-visible:hover {
+    transform: translateY(-5px);
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+    transition-delay: 0s !important;
+    transition-duration: 0.25s;
+  }
+
+  > svg {
+    display: block;
+    margin: 0.25rem auto 1.25rem;
+    font-size: 2.4rem;
+    color: var(--accent);
+  }
+
+  h3 {
+    margin: 0 0 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  p { margin: 0; }
+
 }
