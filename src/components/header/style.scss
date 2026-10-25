@@ -15,9 +15,11 @@
 }
 
 .headerInner {
+  // Brand left, navigation exactly in the middle, search and menu right.
   max-width: 1100px;
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 12px;
 
@@ -26,7 +28,7 @@
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
-    margin-right: auto;
+    justify-self: start;
     em { font-style: normal; color: var(--accent); }
   }
   .brandShort { display: none; }
@@ -56,66 +58,84 @@
     &[aria-current="true"] { color: var(--text); background: var(--accent-soft); }
   }
 
-  // Shown on wider screens; on phones the language switch sits in the footer.
-  .languageSwitch {
-    display: grid;
-    place-items: center;
-    height: 44px;
-    padding: 0 12px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: var(--muted);
-    transition: color 0.2s, border-color 0.2s;
-    &:hover { color: var(--text); border-color: var(--accent); }
-    @media (max-width: 860px) { display: none; }
-  }
-
-  .searchButton {
-    display: inline-flex;
+  .headerTools {
+    justify-self: end;
+    display: flex;
     align-items: center;
     gap: 8px;
+  }
+
+  .searchButton, .menuButton {
+    display: grid;
+    place-items: center;
+    width: 44px;
     height: 44px;
-    padding: 0 8px 0 14px;
+    padding: 0;
     border-radius: 999px;
     border: 1px solid var(--line);
     background: var(--surface);
-    color: var(--muted);
-    font-size: 0.88rem;
+    color: var(--text);
+    font-size: 1.1rem;
     cursor: pointer;
     transition: border-color 0.2s, color 0.2s;
-
-    &:hover, &[aria-expanded="true"] { border-color: var(--accent); color: var(--text); }
-    svg { font-size: 1.05rem; color: var(--text); }
-
-    kbd {
-      padding: 2px 7px;
-      border-radius: 6px;
-      border: 1px solid var(--line);
-      font: inherit;
-      font-size: 0.75rem;
-    }
-  }
-
-  @media (max-width: 860px) {
-    .searchButton {
-      width: 44px;
-      padding: 0;
-      justify-content: center;
-      .label, kbd { display: none; }
-    }
+    &:hover, &[aria-expanded="true"] { border-color: var(--accent); }
   }
 
   @media (max-width: 560px) {
+    // Too narrow for an exactly centred navigation: it takes the space between brand and tools.
+    grid-template-columns: auto 1fr auto;
     gap: 6px;
+    > ul { justify-self: center; }
     .brandFull { display: none; }
     .brandShort { display: inline; }
     > ul a { padding: 8px 9px; font-size: 0.8rem; }
-    .iconButton, .searchButton { width: 40px; height: 40px; }
+    .headerTools { gap: 6px; }
+    .searchButton, .menuButton { width: 40px; height: 40px; }
   }
+}
+
+// Settings menu (language, theme): drops down below its button.
+.headerMenu {
+  position: relative;
+
+  .menuPanel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    display: grid;
+    min-width: 200px;
+    padding: 6px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    animation: menuIn 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+    &[hidden] { display: none; } // display: grid would otherwise keep it visible
+    // Bridges the gap to the button, so moving the pointer down doesn't close it.
+    &::before { content: ""; position: absolute; inset: -10px 0 auto; height: 10px; }
+
+    a, button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 10px;
+      background: none;
+      color: var(--text);
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      svg { font-size: 1.05rem; color: var(--accent); }
+      &:hover, &:focus-visible { background: var(--accent-soft); }
+    }
+  }
+}
+@keyframes menuIn { from { opacity: 0; translate: 0 -4px; } }
+@media (prefers-reduced-motion: reduce) {
+  .headerMenu .menuPanel { animation: none; }
 }
 
 // Dims the page behind the search overlay; clicking it closes the search.

@@ -150,6 +150,40 @@
   z-index: 1;
 }
 
+// Theme (left) and language (right) in the hero's bottom corners; they fade away once the page scrolls.
+.heroCorners {
+  .corner {
+    position: absolute;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 16px 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--surface) 85%, transparent);
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.3s ease, translate 0.3s ease, color 0.2s, border-color 0.2s, visibility 0.3s;
+    svg { font-size: 1.05rem; color: var(--accent); }
+    &:hover, &:focus-visible { color: var(--text); border-color: var(--accent); }
+  }
+  .left { left: max(24px, env(safe-area-inset-left)); }
+  .right { right: max(24px, env(safe-area-inset-right)); }
+
+  &.away .corner { opacity: 0; translate: 0 10px; visibility: hidden; }
+
+  // Phones: just the icons, so they don't crowd the arrow in the middle.
+  @media (max-width: 560px) {
+    .corner { width: 44px; padding: 0; justify-content: center; span { display: none; } }
+  }
+}
+
 @keyframes tokenIn {
   from { opacity: 0; filter: blur(10px); text-shadow: 0 0 0.4em rgba(var(--net-pulse), 1); }
   60% { text-shadow: 0 0 0.25em rgba(var(--net-pulse), 0.6); }

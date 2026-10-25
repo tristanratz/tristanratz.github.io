@@ -5,6 +5,7 @@ const en = {
     nav: { about: "About", projects: "Projects", contact: "Contact", main: "Main", backToTop: "Back to top" },
     language: { switchTo: "Deutsch", label: "Diese Seite auf Deutsch" },
     theme: { toLight: "Switch to light mode", toDark: "Switch to dark mode" },
+    menu: { label: "Settings", light: "Light mode", dark: "Dark mode" },
     hero: {
         scrollDown: "Scroll to about",
         scrubberTitle: "Drag to rewind the generation",
@@ -121,6 +122,7 @@ const de: Strings = {
     nav: { about: "Über mich", projects: "Projekte", contact: "Kontakt", main: "Hauptmenü", backToTop: "Nach oben" },
     language: { switchTo: "English", label: "This page in English" },
     theme: { toLight: "Zum hellen Design wechseln", toDark: "Zum dunklen Design wechseln" },
+    menu: { label: "Einstellungen", light: "Helles Design", dark: "Dunkles Design" },
     hero: {
         scrollDown: "Zu „Über mich“ scrollen",
         scrubberTitle: "Ziehen, um die Generierung zurückzuspulen",

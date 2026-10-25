@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { IoMoonOutline, IoSunnyOutline } from "react-icons/io5";
-import { useTheme } from "../../hooks/useTheme";
 import { useUi } from "../../i18n";
-import { routePath, useRoute } from "../../router";
 import { person } from "../../store/person";
+import { HeaderMenu } from "./HeaderMenu";
 import { HeaderSearch } from "./HeaderSearch";
 import "./style.scss";
 
@@ -11,8 +9,6 @@ const sections = ["about", "projects", "contact"] as const;
 
 export function Header() {
     const ui = useUi();
-    const { route } = useRoute();
-    const { theme, toggle } = useTheme();
     const [scrolled, setScrolled] = useState(false);
     const [active, setActive] = useState<string | null>(null);
 
@@ -48,15 +44,10 @@ export function Header() {
                         </li>
                     ))}
                 </ul>
-                <HeaderSearch />
-                <a className="languageSwitch" href={routePath({ ...route, lang: route.lang === "de" ? "en" : "de" })}
-                   hrefLang={route.lang === "de" ? "en" : "de"} lang={route.lang === "de" ? "en" : "de"} title={ui.language.label}>
-                    {route.lang === "de" ? "EN" : "DE"}
-                </a>
-                <button className="iconButton" onClick={toggle}
-                        aria-label={theme === "dark" ? ui.theme.toLight : ui.theme.toDark}>
-                    {theme === "dark" ? <IoSunnyOutline /> : <IoMoonOutline />}
-                </button>
+                <div className="headerTools">
+                    <HeaderSearch />
+                    <HeaderMenu />
+                </div>
             </nav>
         </header>
     );

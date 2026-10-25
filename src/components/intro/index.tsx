@@ -5,6 +5,7 @@ import { useUi } from "../../i18n";
 import { Lang, useRoute } from "../../router";
 import { getPerson } from "../../store/person";
 import { Icons } from "../Icons";
+import { HeroCorners } from "./HeroCorners";
 import { NetworkHandle, NeuralNetwork } from "./NeuralNetwork";
 import { SearchBox } from "./SearchBox";
 import "./style.scss";
@@ -194,6 +195,7 @@ export function Intro() {
                 <Icons />
             </div>
             <a href="#about" className="downArrow iconButton" aria-label={ui.hero.scrollDown}><IoArrowDown /></a>
+            <HeroCorners />
         </section>
     );
 }

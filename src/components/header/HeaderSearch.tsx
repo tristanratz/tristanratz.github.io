@@ -132,10 +132,9 @@ export function HeaderSearch() {
     return (
         <>
             <button ref={buttonRef} className="searchButton" onClick={() => (open ? hide() : show())}
-                    aria-expanded={open} aria-controls="headerSearch" aria-label={ui.search.button}>
+                    aria-expanded={open} aria-controls="headerSearch" aria-label={ui.search.button}
+                    title={`${ui.search.button} (${shortcut})`} aria-keyshortcuts={shortcut === "⌘K" ? "Meta+K" : "Control+K"}>
                 <IoSearch />
-                <span className="label">{ui.search.button}</span>
-                <kbd>{shortcut}</kbd>
             </button>
             {open && (
                 <>
