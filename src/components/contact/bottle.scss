@@ -53,37 +53,12 @@
     &:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   }
 
-  // The sea with the bottle bobbing on it, along the bottom edge of the box.
+  // The sea along the bottom edge of the box, with a bottle you can grab and throw (Sea.tsx).
   .sea {
     --pad: clamp(1.25rem, 4vw, 1.75rem);
-    position: relative;
-    height: 56px;
-    margin: 0.5rem calc(-1 * var(--pad)) calc(-1 * var(--pad));
-
-    .waves {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 200%;
-      height: 40px;
-      animation: waves 7s linear infinite;
-      path { fill: var(--accent); }
-      &.back { opacity: 0.12; animation-duration: 11s; }
-      &.front { opacity: 0.22; bottom: -2px; }
-    }
-
-    .bottleShape {
-      position: absolute;
-      left: 12%;
-      bottom: 14px;
-      width: 56px;
-      height: 26px;
-      animation: bob 3.2s ease-in-out infinite;
-      .glass { fill: color-mix(in srgb, var(--accent) 35%, white); stroke: var(--accent); stroke-width: 1.2; }
-      .cork { fill: #b98a5a; }
-      .note { fill: #f4ead2; }
-    }
+    margin: 0.25rem calc(-1 * var(--pad)) calc(-1 * var(--pad));
   }
+  .seaCanvas { display: block; width: 100%; touch-action: none; }
 
   .sendRow { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 0.6rem; }
   .send {
@@ -99,13 +74,6 @@
     &:disabled { opacity: 0.35; cursor: default; }
   }
   .sent { margin: 0; font-size: 0.85rem; color: var(--accent); font-weight: 600; }
-
-  // Sending: the bottle drifts off to the right and the sea picks up.
-  &.sailing {
-    .bottleShape { animation: driftOff 1.6s cubic-bezier(0.5, 0, 0.6, 1) forwards; }
-    .waves { animation-duration: 2.5s; }
-  }
-  &.sent .bottleShape { opacity: 0; animation: none; }
 }
 
 .visuallyHidden {
@@ -115,20 +83,4 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-@keyframes waves { to { transform: translateX(-50%); } }
-@keyframes bob {
-  0%, 100% { transform: translateY(0) rotate(-6deg); }
-  50% { transform: translateY(-5px) rotate(4deg); }
-}
-@keyframes driftOff {
-  0% { transform: translateY(0) rotate(-6deg); opacity: 1; }
-  30% { transform: translate(15vw, -8px) rotate(6deg); }
-  60% { transform: translate(35vw, -2px) rotate(-5deg); }
-  100% { transform: translate(60vw, -6px) rotate(4deg); opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bottle .waves, .bottle .bottleShape { animation: none !important; }
 }

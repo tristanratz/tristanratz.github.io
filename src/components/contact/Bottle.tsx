@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { prefersReducedMotion } from "../../env";
 import { useUi } from "../../i18n";
 import { useRoute } from "../../router";
+import { Sea } from "./Sea";
 import "./bottle.scss";
 
 type Topic = "job" | "collab" | "talk" | "hi";
@@ -83,18 +84,8 @@ export function Bottle({ email }: { email: string }) {
                 {state === "sent" && <p className="sent" role="status">{ui.sent}</p>}
             </div>
 
-            <div className="sea" aria-hidden="true">
-                <svg className="waves back" viewBox="0 0 400 40" preserveAspectRatio="none">
-                    <path d="M0 22 Q25 12 50 22 T100 22 T150 22 T200 22 T250 22 T300 22 T350 22 T400 22 V40 H0 Z" />
-                </svg>
-                <svg className="bottleShape" viewBox="0 0 60 28">
-                    <path className="glass" d="M4 8 Q4 4 8 4 H38 Q42 4 44 8 L48 10 H54 Q56 10 56 12 V16 Q56 18 54 18 H48 L44 20 Q42 24 38 24 H8 Q4 24 4 20 Z" />
-                    <rect className="cork" x="54" y="10.5" width="5" height="7" rx="1.5" />
-                    <rect className="note" x="11" y="9" width="24" height="10" rx="2" />
-                </svg>
-                <svg className="waves front" viewBox="0 0 400 40" preserveAspectRatio="none">
-                    <path d="M0 26 Q25 18 50 26 T100 26 T150 26 T200 26 T250 26 T300 26 T350 26 T400 26 V40 H0 Z" />
-                </svg>
+            <div className="sea">
+                <Sea away={state !== "idle"} />
             </div>
         </form>
     );
