@@ -211,11 +211,32 @@ export interface Result {
     fallback?: boolean;
 }
 
-const queryTerms = (query: string) => {
-    const terms = new Map<string, string | null>(); // term -> query word it is a synonym of (null: typed itself)
+// Question words are stopwords, but on their own ("Where?", "Wo?") they still say what is asked for.
+const questionWords: Record<string, string[]> = {
+    where: ["location", "based", "live", "city"],
+    wo: ["wohnort", "wohnen", "stadt"],
+    woher: ["wohnort", "heimat"],
+    who: ["about", "background"],
+    wer: ["person", "hintergrund"],
+    when: ["experience", "career"],
+    wann: ["werdegang", "lebenslauf"],
+};
+
+type Terms = Map<string, string | null>; // term -> query word it is a synonym of (null: typed itself)
+
+const queryTerms = (query: string): Terms => {
+    const terms: Terms = new Map();
     for (const t of tokenize(query)) {
         terms.set(t, null);
         for (const s of synonyms[t] ?? []) if (!terms.has(s)) terms.set(s, t);
+    }
+    return terms;
+};
+
+const questionTerms = (query: string): Terms => {
+    const terms: Terms = new Map();
+    for (const word of query.toLowerCase().split(/[^a-z]+/)) {
+        for (const s of questionWords[word] ?? []) if (!terms.has(s)) terms.set(s, word);
     }
     return terms;
 };
@@ -233,8 +254,14 @@ function bestSentence(doc: Doc, words: Set<string>) {
 
 /** BM25 ranking with a title boost, prefix and typo matching and a few synonyms. */
 function keywordResults(query: string, lang: Lang): Result[] {
+    // The question word only counts when the rest finds nothing: "where did he study" is about
+    // studying, but "where" alone, or while the next word is still half typed ("where li"), asks for a place.
+    const results = rank(queryTerms(query), lang);
+    return results.length ? results : rank(questionTerms(query), lang);
+}
+
+function rank(terms: Terms, lang: Lang): Result[] {
     const { docs, index, avgLength, vocabulary } = corpus(lang);
-    const terms = queryTerms(query);
     if (!terms.size) return [];
     // Words repeat a lot across documents, so each (term, word) pair is compared only once.
     const memo = new Map<string, ReturnType<typeof match>>();
@@ -287,11 +314,17 @@ const MIN_SIMILARITY = 0.47; // tuned so nonsense queries ("football", "Kochen")
 // so the semantic search almost always has an answer. Below it (gibberish) it stays empty.
 const FALLBACK_SIMILARITY = 0.3;
 
+/** Embeds every entry once per language (title, answer and keywords separately). */
+export function indexDocs(model: EmbeddingModel, lang: Lang) {
+    const c = corpus(lang);
+    c.vectors ??= c.docs.map((d) => [d.title, d.answer, d.keywords].map((field) => model.embed(contentWords(field))));
+}
+
 export function semanticSearch(query: string, model: EmbeddingModel, lang: Lang = "en", limit = 4,
                                minSimilarity = MIN_SIMILARITY): Result[] {
     if (!query.trim()) return [];
     const c = corpus(lang), docs = c.docs;
-    c.vectors ??= docs.map((d) => [d.title, d.answer, d.keywords].map((field) => model.embed(contentWords(field))));
+    indexDocs(model, lang);
     const q = model.embed(contentWords(query));
     const similarity = new Map(docs.map((doc, i) => [doc, Math.max(...c.vectors![i].map((v) => cosine(q, v)))]));
     const semantic = docs.filter((d) => similarity.get(d)! >= minSimilarity)

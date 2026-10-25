@@ -115,3 +115,16 @@ describe("result details", () => {
         expect(search("langauges")[0].matches.some((m) => m.kind === "typo")).toBe(true);
     });
 });
+
+describe("question words on their own", () => {
+    it.each([["Where", "en", "Based in"], ["Where?", "en", "Based in"], ["Wo", "de", "Wohnort"], ["Who", "en", "About"]] as const)(
+        "“%s” (%s) finds %s", (query, lang, title) => {
+            expect(search(query, lang)[0]?.doc.title).toBe(title);
+        });
+    it.each(["where ", "Where are", "where li", "Where does he"])("still answers “%s” while typing", (query) => {
+        expect(search(query)[0]?.doc.title).toBe("Based in");
+    });
+    it("only counts when nothing else was asked", () => {
+        expect(search("where did he study")[0].doc.kind).toBe("Experience");
+    });
+});

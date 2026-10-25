@@ -52,7 +52,7 @@
   font-size: 0.78rem;
   color: var(--muted);
 
-  &.loading { animation: modePulse 1.2s ease-in-out infinite; }
+  &.indexing { animation: modePulse 1.2s ease-in-out infinite; }
   &.ready::before { content: "● "; color: #3f9d6b; }
   a { text-decoration: underline; text-underline-offset: 0.2em; }
 }

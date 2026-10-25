@@ -3,21 +3,41 @@ import { IoArrowForward, IoClose, IoMail, IoSearch } from "react-icons/io5";
 import { EmbeddingModel, loadEmbeddingModel } from "../../store/embeddings";
 import { prefersReducedMotion } from "../../env";
 import { useUi } from "../../i18n";
-import { useRoute } from "../../router";
-import { Doc, Match, normalizeWord, Result, search, semanticSearch } from "../../store/knowledge";
+import { Lang, useRoute } from "../../router";
+import { Doc, indexDocs, Match, normalizeWord, Result, search, semanticSearch } from "../../store/knowledge";
 import { NetworkHandle } from "./NeuralNetwork";
 import "./search.scss";
 
-// Proof of concept: semantic search is only switched on via ?search=semantic.
+// Semantic search (proof of concept): the 5 MB model loads once someone engages with the search,
+// then every entry is embedded ("indexing"). Until then, and without it, keyword search answers.
+type ModelStatus = "off" | "indexing" | "ready" | "error";
+const modelState: { model: EmbeddingModel | null, status: ModelStatus } = { model: null, status: "off" };
+const modelListeners = new Set<() => void>();
+const setModelState = (next: Partial<typeof modelState>) => {
+    Object.assign(modelState, next);
+    modelListeners.forEach((listener) => listener());
+};
+
+/** Starts loading the model (once); skipped when the visitor asked to save data. */
+export function startSemanticSearch(lang: Lang) {
+    if (modelState.status !== "off" && modelState.status !== "error") return;
+    if ((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) return;
+    setModelState({ status: "indexing" });
+    loadEmbeddingModel()
+        .then((model) => new Promise<EmbeddingModel>((resolve) =>
+            // Embedding the entries takes a moment; let the "indexing" state paint first.
+            window.setTimeout(() => { indexDocs(model, lang); resolve(model); }, 0)))
+        .then((model) => setModelState({ model, status: "ready" }), () => setModelState({ status: "error" }));
+}
+
 function useEmbeddingModel() {
-    const [model, setModel] = useState<EmbeddingModel | null>(null);
-    const [status, setStatus] = useState<"off" | "loading" | "ready" | "error">("off");
+    const [, rerender] = useState(0);
     useEffect(() => {
-        if (new URLSearchParams(window.location.search).get("search") !== "semantic") return;
-        setStatus("loading");
-        loadEmbeddingModel().then((m) => { setModel(m); setStatus("ready"); }, () => setStatus("error"));
+        const listener = () => rerender((n) => n + 1);
+        modelListeners.add(listener);
+        return () => { modelListeners.delete(listener); };
     }, []);
-    return { model, status };
+    return modelState;
 }
 
 /** Follows a result: opens the project, or scrolls to the place on the page and briefly highlights it. */
@@ -172,6 +192,8 @@ export function SearchBox({ network, animate = false, autoFocus, syncUrl = false
     const [active, setActive] = useState(-1);
     const placeholder = useTypedPlaceholder(animate, ui.suggestions);
     const { model, status } = useEmbeddingModel();
+    // The overlay is the search itself: opening it starts loading the model.
+    useEffect(() => { if (!entry) startSemanticSearch(lang); }, [entry, lang]);
     const results = useMemo(() => (entry ? [] : model ? semanticSearch(query, model, lang) : search(query, lang)),
         [query, model, lang, entry]);
     const [top, ...related] = results;
@@ -209,14 +231,14 @@ export function SearchBox({ network, animate = false, autoFocus, syncUrl = false
                        aria-label={ui.label} autoComplete="off" spellCheck={false}
                        role="combobox" aria-expanded={results.length > 0} aria-controls={`${id}-results`}
                        aria-activedescendant={active >= 0 ? optionId(active) : undefined}
-                       onKeyDown={onKeyDown} onChange={(e) => (entry ? handOver(e.target.value) : setQuery(e.target.value))} />
+                       onKeyDown={onKeyDown}
+                       onFocus={() => startSemanticSearch(lang)}
+                       onChange={(e) => (entry ? handOver(e.target.value) : setQuery(e.target.value))} />
                 {query && <button type="button" className="clear" aria-label={ui.clear} onClick={() => setQuery("")}><IoClose /></button>}
             </form>
 
             {!entry && status !== "off" && (
-                <p className={"searchMode " + status}>
-                    {ui.status[status]} · <a href="?">{ui.status.off}</a>
-                </p>
+                <p className={"searchMode " + status} role="status">{ui.status[status]}</p>
             )}
 
             <div className="below">
@@ -231,7 +253,6 @@ export function SearchBox({ network, animate = false, autoFocus, syncUrl = false
                 {query && !top && (
                     <p className="empty" role="status">
                         {ui.empty}
-                        {status === "off" && <> <a href={`?search=semantic&q=${encodeURIComponent(query)}`}>{ui.trySemantic} →</a></>}
                     </p>
                 )}
                 {top?.fallback && <p className="closest">{ui.closest}</p>}

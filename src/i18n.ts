@@ -18,7 +18,6 @@ const en = {
         results: "Search results",
         clear: "Clear search",
         empty: "Nothing found. Try “RAG”, “paper” or “contact”.",
-        trySemantic: "Try the semantic search",
         closest: "No direct match. Closest topics:",
         suggestions: [
             "What does Tristan work on?",
@@ -39,10 +38,9 @@ const en = {
         matchKinds: { exact: "exact", prefix: "word start", typo: "typo corrected", synonym: "synonym" },
         kinds: { Profile: "Profile", Experience: "Experience", Project: "Project", Contact: "Contact" },
         status: {
-            loading: "Semantic search (PoC) · loading 5 MB model…",
-            ready: "Semantic search (PoC) · runs in your browser",
+            indexing: "Indexing… meanwhile searching by keywords",
+            ready: "Semantic search · runs in your browser",
             error: "Semantic model unavailable, using keyword search",
-            off: "turn off",
         },
     },
     about: {
@@ -125,7 +123,6 @@ const de: Strings = {
         results: "Suchergebnisse",
         clear: "Suche löschen",
         empty: "Nichts gefunden. Versuch es mit „RAG“, „Paper“ oder „Kontakt“.",
-        trySemantic: "Mit der semantischen Suche probieren",
         closest: "Kein direkter Treffer. Am nächsten dran:",
         suggestions: [
             "Woran arbeitet Tristan?",
@@ -146,10 +143,9 @@ const de: Strings = {
         matchKinds: { exact: "exakt", prefix: "Wortanfang", typo: "Tippfehler korrigiert", synonym: "Synonym" },
         kinds: { Profile: "Profil", Experience: "Werdegang", Project: "Projekt", Contact: "Kontakt" },
         status: {
-            loading: "Semantische Suche (PoC) · lädt 5-MB-Modell…",
-            ready: "Semantische Suche (PoC) · läuft in deinem Browser",
+            indexing: "Indexiere… solange per Stichwort",
+            ready: "Semantische Suche · läuft in deinem Browser",
             error: "Semantisches Modell nicht verfügbar, Keyword-Suche aktiv",
-            off: "ausschalten",
         },
     },
     about: {
