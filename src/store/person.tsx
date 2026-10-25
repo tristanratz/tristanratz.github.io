@@ -55,7 +55,7 @@ export const person: Person = {
     qualities: ["team player", "analytical", "curious", "fast learner"],
     interests: ["Large Language Models", "Retrieval Augmented Generation", "Search & Knowledge", "Human-centered AI"],
     about: [
-        "I lead an engineering team for AI, search and knowledge at Serviceware. We are working on the future of AI-native Enterprise Service Management (ESM) and, with Agent Hub, redefining the way people work in the service industry.",
+        "At Serviceware, I manage the teams around AI, search and knowledge of the AI-native Serviceware Platform. We are working on the future of AI-native Enterprise Service Management (ESM) and, with Agent Hub, redefining the way people work in the service industry.",
         "Before that I worked as a Generative AI consultant at Genow AI and studied Information Systems at TU Darmstadt, where I spent most of my time on natural language processing, from question answering to retrieval augmented generation.",
         "What I keep coming back to: a model is only as good as the experience it enables. If people notice the AI more than the improvement, something went wrong.",
     ],
@@ -84,7 +84,7 @@ const german: Partial<Omit<Person, "path">> & { path: Partial<Person["path"][num
     qualities: ["Teamplayer", "analytisch", "neugierig", "lernt schnell"],
     interests: ["Große Sprachmodelle", "Retrieval Augmented Generation", "Suche & Wissen", "Menschzentrierte KI"],
     about: [
-        "Ich leite bei Serviceware ein Engineering-Team für KI, Suche und Wissen. Wir arbeiten an der Zukunft des KI-nativen Enterprise Service Management (ESM) und definieren mit Agent Hub neu, wie Menschen in der Service-Branche arbeiten.",
+        "Bei Serviceware verantworte ich die Teams rund um KI, Suche und Wissen der KI-nativen Serviceware Platform. Wir arbeiten an der Zukunft des KI-nativen Enterprise Service Management (ESM) und definieren mit Agent Hub neu, wie Menschen in der Service-Branche arbeiten.",
         "Davor war ich Generative-AI-Consultant bei Genow AI und habe Wirtschaftsinformatik (Information Systems) an der TU Darmstadt studiert, mit Schwerpunkt Natural Language Processing, von Question Answering bis Retrieval Augmented Generation.",
         "Worauf ich immer wieder zurückkomme: Ein Modell ist nur so gut wie die Erfahrung, die es ermöglicht. Wenn Menschen die KI mehr bemerken als die Verbesserung, ist etwas schiefgelaufen.",
     ],

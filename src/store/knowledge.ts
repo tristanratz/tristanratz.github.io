@@ -42,8 +42,8 @@ export function getDocs(lang: Lang): Doc[] {
             kind: "Profile", title: l.does,
             answer: `${person.job} ${l.at} ${person.employer}.`,
             keywords: "job work role position current team lead engineering employer company does " +
-                "agent hub esm enterprise service management ai-native agents service industry " +
-                "Beruf Arbeit Stelle Rolle Teamleiter Arbeitgeber Firma Service-Branche",
+                "agent hub esm enterprise service management ai-native agents service industry serviceware platform teams " +
+                "Beruf Arbeit Stelle Rolle Teamleiter Teams Arbeitgeber Firma Service-Branche Plattform",
             action: showIn("about-working-at"),
         },
         ...person.about.map((paragraph): Doc => ({
