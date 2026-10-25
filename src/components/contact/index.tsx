@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useReveal } from "../../hooks/useReveal";
 import { useUi } from "../../i18n";
 import { routePath, useRoute } from "../../router";
 import { getPerson } from "../../store/person";
 import { Icons } from "../Icons";
 import { Imprint } from "../imprint";
+import { Bike } from "./Bike";
 import { Bottle } from "./Bottle";
 import "./style.scss";
 
@@ -14,10 +15,11 @@ export function Contact() {
     const person = getPerson(route.lang);
     const other = route.lang === "de" ? "en" : "de";
     const [showImprint, setShowImprint] = useState(false);
+    const footerRef = useRef<HTMLElement>(null);
     const ref = useReveal<HTMLDivElement>();
 
     return (
-        <footer className="section contact" id="contact">
+        <footer className="section contact" id="contact" ref={footerRef}>
             <div className="container reveal" ref={ref}>
                 <div className="contactGrid">
                 <div className="contactDetails">
@@ -41,6 +43,8 @@ export function Contact() {
                 <Bottle email={person.email} />
                 </div>
                 <div className="legal">
+                    {/* Now and then a cyclist rides along this line; grab and throw it (Bike.tsx). */}
+                    <Bike host={footerRef} />
                     <span>© {new Date().getFullYear()} {person.firstName} {person.lastName}</span>
                     <a href={routePath({ ...route, lang: other })} hrefLang={other} lang={other}>{ui.language.switchTo}</a>
                     <button onClick={() => setShowImprint(true)}>{ui.contact.imprint}</button>

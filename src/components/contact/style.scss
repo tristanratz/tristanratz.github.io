@@ -33,6 +33,7 @@
   }
 
   .legal {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -44,6 +45,18 @@
     color: var(--muted);
 
     a { margin-left: auto; &:hover { color: var(--text); } }
+
+    // Sits on the line (the border above) and reaches up into the page for throws; clicks go
+    // through to the page unless they grab the bike.
+    .bikeCanvas {
+      position: absolute;
+      left: 0;
+      bottom: calc(100% + 1px);
+      width: 100%;
+      height: 260px; // grown by Bike.tsx up to the top of the section
+      pointer-events: none;
+      z-index: 2;
+    }
 
     button {
       background: none;
