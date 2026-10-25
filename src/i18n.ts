@@ -68,6 +68,7 @@ const en = {
         region: "Projects",
         onGithub: (name: string) => `${name} on GitHub`,
         open: (name: string) => `Open ${name}`,
+        aiImage: "AI-generated image",
         mapNote: "Similar projects sit close together. Positions come from the site’s embedding model; lines connect each project to its two most similar ones.",
     },
     contact: {
@@ -173,6 +174,7 @@ const de: Strings = {
         region: "Projekte",
         onGithub: (name: string) => `${name} auf GitHub`,
         open: (name: string) => `${name} öffnen`,
+        aiImage: "KI-generiertes Bild",
         mapNote: "Ähnliche Projekte liegen nah beieinander. Die Positionen stammen aus dem Embedding-Modell der Seite; Linien verbinden jedes Projekt mit seinen zwei ähnlichsten.",
     },
     contact: {

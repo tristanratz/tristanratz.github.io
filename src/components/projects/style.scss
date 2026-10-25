@@ -83,10 +83,26 @@
   &.active { opacity: 1; transform: none; }
 
   .cardImage {
+    position: relative;
     aspect-ratio: 16 / 10;
     background-color: var(--line); // until the image is loaded
     background-size: cover;
     background-position: center;
+  }
+
+  // Labels AI-generated images, small enough not to compete with the picture.
+  .aiLabel {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(8, 12, 20, 0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 600;
   }
 
   .cardBody {
@@ -318,7 +334,9 @@
 
 .projectDetail {
   .display { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 0.4rem 0 0.75rem; }
-  img { width: 100%; border-radius: 14px; margin: 1.5rem 0; aspect-ratio: 16 / 9; object-fit: cover; }
+  .detailImage { margin: 1.5rem 0; }
+  img { display: block; width: 100%; border-radius: 14px; aspect-ratio: 16 / 9; object-fit: cover; }
+  figcaption { margin-top: 0.4rem; font-size: 0.78rem; color: var(--muted); }
   .lead { font-size: 1.12rem; font-weight: 500; }
   p { color: var(--muted); }
   .lead, .eyebrow { color: var(--text); }

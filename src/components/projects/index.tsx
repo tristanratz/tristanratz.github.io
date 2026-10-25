@@ -240,7 +240,9 @@ export function Projects() {
                              style={vt("project-card", morphing === i)}
                              onClick={() => (i === active ? openProject(i) : go(i))}>
                         <div className="cardImage"
-                             style={{ backgroundImage: image(i), ...vt("project-image", morphing === i) }} />
+                             style={{ backgroundImage: image(i), ...vt("project-image", morphing === i) }}>
+                            {p.aiImage && <span className="aiLabel">{ui.aiImage}</span>}
+                        </div>
                         <div className="cardBody">
                             <p className="eyebrow">{p.date}</p>
                             <h3 className="serif">
@@ -276,7 +278,10 @@ export function Projects() {
                         <p className="eyebrow">{current.date}</p>
                         <h3 className="display serif">{current.name}</h3>
                         {current.technologies.length > 0 && <p className="tech">{current.technologies.join(" · ")}</p>}
-                        <img src={current.image} alt="" style={vt("project-image", canMorph)} />
+                        <figure className="detailImage">
+                            <img src={current.image} alt="" style={vt("project-image", canMorph)} />
+                            {current.aiImage && <figcaption>{ui.aiImage}</figcaption>}
+                        </figure>
                         <p className="lead">{current.description}</p>
                         {current.text.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
                         {(current.github || current.link) && (

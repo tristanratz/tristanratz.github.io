@@ -55,6 +55,7 @@
     ],
     "language": "en",
     "image": "/img/scu.webp",
+    "aiImage": true,
     "date": "2024",
     "github": "https://github.com/tristanratz/SCU-text-evaluation",
     "link": "https://arxiv.org/abs/2404.01701",
@@ -126,6 +127,7 @@
     ],
     "language": "en",
     "image": "/img/green_roofs.webp",
+    "aiImage": true,
     "date": "2022",
     "link": "https://www.spaceoffice.nl/nl/nieuws/588/studenten-tu-e-ontwikkelen-prototype-ruimtevaarttoepassing.html",
     "keywords": [
@@ -208,6 +210,7 @@
     ],
     "language": "en",
     "image": "/img/imagesegmentation.webp",
+    "aiImage": true,
     "date": "2021",
     "github": "https://github.com/tristanratz/Interactive-Image-Segmentation",
     "keywords": [
@@ -246,6 +249,7 @@
     ],
     "language": "en",
     "image": "/img/podcast.webp",
+    "aiImage": true,
     "date": "2020",
     "link": "https://anchor.fm/kixperts/episodes/04-KI-Fotofinanzierung-mit-Tobias--Stephan-und-Tristan-eipguk/a-a32frr8",
     "keywords": [
@@ -413,7 +417,7 @@
       "The CMS was graded with the best grade in the german system."
     ],
     "language": "en",
-    "image": "/img/bll.jpeg",
+    "image": "/img/bll.webp",
     "date": "2015",
     "keywords": [
       "Schulprojekt",

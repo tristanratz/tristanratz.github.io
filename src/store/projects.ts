@@ -9,6 +9,8 @@ export interface ProjectData {
     technologies: string[];
     language: string;
     image: string;
+    /** The image was generated with AI and is labelled as such. */
+    aiImage?: boolean;
     date: string;
     github?: string;
     blogpost?: string;
