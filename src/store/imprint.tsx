@@ -83,8 +83,8 @@ export function ImprintText({ english }: { english: boolean }) {
 
             <h3>Einstellungen in Ihrem Browser</h3>
             <p>
-                Wenn Sie ein Farbschema oder die Kartenansicht der Projekte wählen, speichert die Seite diese
-                Auswahl im lokalen Speicher Ihres Browsers (localStorage), damit sie beim nächsten Besuch erhalten
+                Wenn Sie ein Farbschema oder die Kartenansicht der Projekte wählen oder die Segelboote
+                ausblenden, speichert die Seite diese Auswahl im lokalen Speicher Ihres Browsers (localStorage), damit sie beim nächsten Besuch erhalten
                 bleibt. Diese Angaben verlassen Ihr Gerät nicht. Die Speicherung ist für die von Ihnen gewünschte
                 Funktion unbedingt erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG). Sie können sie jederzeit über die
                 Einstellungen Ihres Browsers löschen.

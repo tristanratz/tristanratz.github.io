@@ -54,7 +54,16 @@ const en = {
         technologies: "Technologies",
         interests: "Interests",
     },
-    experience: { eyebrow: "Experience", title: ["The path ", "so far"] },
+    experience: {
+        eyebrow: "Experience", title: ["The path ", "so far"],
+        regatta: {
+            disable: "Disable regatta", enable: "Enable regatta",
+            hint: "Sailboats race for their buoys; your cursor is the wind.",
+            scores: "Buoys reached",
+            colors: ["Blue", "Green", "Orange", "Rose", "Violet"],
+            boat: (color: string, score: number) => `${color}: ${score} ${score === 1 ? "buoy" : "buoys"}`,
+        },
+    },
     projects: {
         eyebrow: "Selected work",
         title: "Projects",
@@ -160,7 +169,16 @@ const de: Strings = {
         technologies: "Technologien",
         interests: "Interessen",
     },
-    experience: { eyebrow: "Werdegang", title: ["Der bisherige ", "Weg"] },
+    experience: {
+        eyebrow: "Werdegang", title: ["Der bisherige ", "Weg"],
+        regatta: {
+            disable: "Regatta ausschalten", enable: "Regatta einschalten",
+            hint: "Segelboote fahren um ihre Bojen; dein Cursor ist der Wind.",
+            scores: "Erreichte Bojen",
+            colors: ["Blau", "Grün", "Orange", "Rosé", "Violett"],
+            boat: (color: string, score: number) => `${color}: ${score} ${score === 1 ? "Boje" : "Bojen"}`,
+        },
+    },
     projects: {
         eyebrow: "Ausgewählte Arbeiten",
         title: "Projekte",

@@ -1,5 +1,8 @@
 .experience {
-  .container { max-width: 960px; }
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  .container { position: relative; z-index: 1; max-width: 960px; }
   .eyebrow { text-align: center; margin: 0; }
   .display {
     text-align: center;
@@ -162,3 +165,109 @@
     .entry.left .period.implicit, .entry.right .period.implicit { display: none; }
   }
 }
+
+// The regatta's switch with its scoreboard underneath (buoys reached per boat, leader first).
+.regattaPanel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px 7px 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
+    svg { font-size: 15px; color: var(--accent); }
+    &:hover, &:focus-visible { border-color: var(--accent); background: var(--accent-soft); }
+    &:active { transform: scale(0.97); }
+  }
+
+  .scores {
+    display: flex;
+    gap: 10px;
+    margin: 0;
+    padding: 4px 10px;
+    border-radius: 999px;
+    list-style: none;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    li { display: flex; align-items: center; gap: 4px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); }
+  }
+
+  &.off button { box-shadow: none; color: var(--muted); svg { color: inherit; } }
+}
+
+@media (max-width: 720px) {
+  .regattaPanel { top: 10px; right: 10px; }
+}
+
+// The water under the regatta (waterGL.ts): a canvas that follows the visible part of the section.
+.regattaWater {
+  position: absolute;
+  left: 0;
+  z-index: 0;
+  width: 100%;
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+// Sailboats behind the timeline (Regatta.tsx); the pointer is the wind.
+.regatta {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  --shadow-hull: rgba(10, 20, 40, 0.22);
+  --shadow-sail: rgba(10, 20, 40, 0.13);
+  .hullShadow { fill: var(--shadow-hull); }
+  .sailShadow { fill: var(--shadow-sail); }
+  .log { font: 600 10px/1 var(--font-sans); text-anchor: middle; font-variant-numeric: tabular-nums; }
+  .isotach { fill: none; stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 2 6; stroke-linecap: round; stroke-opacity: 0.55; }
+  .isotachLabel {
+    font: 600 10px/1 var(--font-sans);
+    fill: var(--accent);
+    fill-opacity: 0.9;
+    paint-order: stroke;
+    stroke: var(--bg);
+    stroke-width: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .regatta { --shadow-hull: rgba(0, 0, 0, 0.6); --shadow-sail: rgba(0, 0, 0, 0.4); }
+}
+:root[data-theme="dark"] .regatta { --shadow-hull: rgba(0, 0, 0, 0.6); --shadow-sail: rgba(0, 0, 0, 0.4); }
+
+// Without motion there are no boats to switch.
+@media (prefers-reduced-motion: reduce) {
+  .regattaPanel { display: none; }
+}
+
+// Fading in when switched on, and out (for REGATTA_FADE ms, Regatta.tsx) before being removed.
+.regattaWater, .regatta {
+  animation: regattaIn 0.8s ease backwards;
+  transition: opacity 0.6s ease;
+  &.leaving { opacity: 0; }
+}
+@keyframes regattaIn { from { opacity: 0; } }

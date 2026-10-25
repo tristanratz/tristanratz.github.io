@@ -1,8 +1,12 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { IoBoatOutline } from "react-icons/io5";
 import { useReveal } from "../../hooks/useReveal";
 import { useUi } from "../../i18n";
 import { useRoute } from "../../router";
 import { experienceId, getPerson, Person } from "../../store/person";
+import { prefersReducedMotion } from "../../env";
+import { Regatta, REGATTA_FADE } from "./Regatta";
+import { BOAT_COLORS } from "./regattaPhysics";
 import "./style.scss";
 
 type Step = Person["path"][number];
@@ -55,9 +59,54 @@ export function Experience() {
         };
     }, []);
 
+    const sectionRef = useRef<HTMLElement>(null);
+    // The sailboats can be switched off; remembered per visitor (read after mount, the pre-rendered page has them on).
+    const [boats, setBoats] = useState(true);
+    const [scores, setScores] = useState<number[]>([0, 0, 0, 0, 0]);
+    useEffect(() => {
+        try { if (localStorage.getItem("sailboats") === "off") setBoats(false); } catch { /* storage unavailable */ }
+    }, []);
+    // Switching off fades the regatta out first and only then takes it away; clicking again while
+    // it fades brings it back.
+    const [leaving, setLeaving] = useState(false);
+    const fadeTimer = useRef(0);
+    const remember = (on: boolean) => {
+        try { localStorage.setItem("sailboats", on ? "on" : "off"); } catch { /* storage unavailable */ }
+    };
+    const toggleBoats = () => {
+        window.clearTimeout(fadeTimer.current);
+        if (leaving) {
+            setLeaving(false);
+            remember(true);
+        } else if (boats) {
+            remember(false);
+            if (prefersReducedMotion()) return setBoats(false);
+            setLeaving(true);
+            fadeTimer.current = window.setTimeout(() => { setBoats(false); setLeaving(false); }, REGATTA_FADE);
+        } else {
+            setBoats(true);
+            remember(true);
+        }
+    };
+    const on = boats && !leaving;
     let index = 0;
     return (
-        <section className="section experience" id="experience">
+        <section className="section experience" id="experience" ref={sectionRef}>
+            {boats && <Regatta section={sectionRef} onScore={setScores} leaving={leaving} />}
+            <div className={"regattaPanel" + (on ? "" : " off")}>
+                <button onClick={toggleBoats} aria-pressed={on} title={ui.regatta.hint}>
+                    <IoBoatOutline /> {on ? ui.regatta.disable : ui.regatta.enable}
+                </button>
+                {on && (
+                    <ol className="scores" aria-label={ui.regatta.scores}>
+                        {scores.map((score, i) => ({ score, i })).sort((a, b) => b.score - a.score || a.i - b.i).map(({ score, i }) => (
+                            <li key={i} title={ui.regatta.boat(ui.regatta.colors[i], score)}>
+                                <span className="dot" style={{ background: BOAT_COLORS[i] }} />{score}
+                            </li>
+                        ))}
+                    </ol>
+                )}
+            </div>
             <div className="container">
                 <p className="eyebrow">{ui.eyebrow}</p>
                 <h2 className="display sectionTitle">{ui.title[0]}<em>{ui.title[1]}</em></h2>

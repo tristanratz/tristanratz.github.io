@@ -32,6 +32,8 @@ import { prefersReducedMotion } from "../../env";
 function readColor(name: string) {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "120, 150, 200";
 }
+/** How strongly the resting network is drawn (--net-strength; stronger on the light background). */
+const readStrength = () => Number(getComputedStyle(document.documentElement).getPropertyValue("--net-strength")) || 1;
 
 // Builds a layered network whose adjacent layers are fully connected.
 function buildNetwork(width: number, height: number) {
@@ -78,6 +80,7 @@ export const NeuralNetwork = forwardRef<NetworkHandle>(function NeuralNetwork(_,
         let raf = 0, visible = true, frame = 0;
         let nodeColor = readColor("--net-node");
         let pulseColor = readColor("--net-pulse");
+        let strength = readStrength();
         const mouse = { x: 0, y: 0, sx: 0, sy: 0, px: -1e4, py: -1e4, lastX: 0, lastY: 0, lastTime: 0 };
         // Tailwind (proof of concept): moving the pointer or scrolling fast speeds the signals up,
         // and it calms down again on its own.
@@ -148,7 +151,7 @@ export const NeuralNetwork = forwardRef<NetworkHandle>(function NeuralNetwork(_,
             }
 
             ctx.lineWidth = 1;
-            ctx.strokeStyle = `rgba(${nodeColor}, 0.08)`;
+            ctx.strokeStyle = `rgba(${nodeColor}, ${0.08 * strength})`;
             ctx.beginPath();
             for (let l = 0; l < network.length - 1; l++) {
                 for (const a of network[l]) for (const b of network[l + 1]) drawEdge(a, b);
@@ -256,7 +259,7 @@ export const NeuralNetwork = forwardRef<NetworkHandle>(function NeuralNetwork(_,
                     ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
                     ctx.fill();
                 }
-                ctx.fillStyle = `rgba(${nodeColor}, ${0.35 + n.glow * 0.65})`;
+                ctx.fillStyle = `rgba(${nodeColor}, ${Math.min(1, 0.35 * strength + n.glow * 0.65)})`;
                 ctx.beginPath();
                 ctx.arc(n.x, n.y, 2.6 + n.glow * 1.4, 0, Math.PI * 2);
                 ctx.fill();
@@ -267,6 +270,7 @@ export const NeuralNetwork = forwardRef<NetworkHandle>(function NeuralNetwork(_,
             if (++frame % 30 === 0) {
                 nodeColor = readColor("--net-node");
                 pulseColor = readColor("--net-pulse");
+                strength = readStrength();
             }
             wind *= 0.95;
             mouse.sx += (mouse.x - mouse.sx) * 0.06;
