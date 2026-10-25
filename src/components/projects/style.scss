@@ -355,6 +355,9 @@
 ::view-transition-group(project-card) {
   overflow: clip;
   border-radius: var(--radius);
+  // Card and dialog share this surface (white in both themes, see $widgets in global.scss): it stays
+  // opaque while their contents cross-fade on top, so the page never shows through the moving box.
+  background: #fff;
 }
 ::view-transition-image-pair(project-card) { isolation: auto; }
 ::view-transition-old(project-card),
