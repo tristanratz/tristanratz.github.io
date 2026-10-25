@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { IoSearch } from "react-icons/io5";
 import { prefersReducedMotion, useIsomorphicLayoutEffect } from "../../env";
 import { useUi } from "../../i18n";
@@ -6,7 +7,7 @@ import { SearchBox } from "../intro/SearchBox";
 
 /**
  * The search overlay below the top bar. Opened by its button, Cmd/Ctrl+K, "/", a ?q= link, or by
- * typing into the hero search, in which case it glides up out of the hero's search field.
+ * clicking the hero search, in which case it glides out of the hero's search field (and back into it on close).
  */
 export function HeaderSearch() {
     const ui = useUi();
@@ -20,20 +21,54 @@ export function HeaderSearch() {
     const panelRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
+    const backdropRef = useRef<HTMLDivElement>(null);
+    // Bumped on every opening and closing, so a closing animation that finishes late
+    // doesn't close a search that was opened again in the meantime.
+    const generation = useRef(0);
+    // The hero's search folded away while the overlay is open, so the rest of the hero closes up.
+    const fold = useRef<Animation | null>(null);
+
     const show = (query = "", rect: DOMRect | null = null) => {
+        generation.current++;
         setInitial(query);
         from.current = rect;
         setSession((s) => s + 1);
         setOpen(true);
     };
     const hide = () => {
-        setOpen(false);
         // The shared ?q= link belongs to the open search.
         const url = new URL(window.location.href);
         if (url.searchParams.has("q")) {
             url.searchParams.delete("q");
             window.history.replaceState(window.history.state, "", url);
         }
+        const panel = panelRef.current;
+        const reduced = prefersReducedMotion();
+        // Unfold the hero's search; the panel glides into where the field will end up.
+        const hero = heroSearch();
+        const folded = fold.current;
+        fold.current = null;
+        folded?.cancel();
+        // Measured unfolded, before the unfold animation starts at height 0.
+        const field = hero?.querySelector(".searchBox")!.getBoundingClientRect();
+        const unfold = hero && folded ? hero.animate(
+            [{ height: "0px", marginTop: "0px" }, { height: `${hero.offsetHeight}px`, marginTop: getComputedStyle(hero).marginTop }],
+            reduced ? { duration: 0 } : CLOSE) : null;
+        if (!panel || reduced) return setOpen(false);
+        const current = ++generation.current;
+        // Back into the hero's search field while it's on screen, otherwise just fade away.
+        const animations = field && hero && onScreen(hero) ? glide(panel, field, "out") : [panel.animate(
+            [{ opacity: 1 }, { opacity: 0, transform: "translateY(-8px) scale(0.98)" }],
+            { duration: 200, easing: "ease-in", fill: "forwards" })];
+        if (unfold) animations.push(unfold);
+        const backdrop = backdropRef.current;
+        if (backdrop) {
+            backdrop.style.pointerEvents = "none";
+            animations.push(backdrop.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: "forwards" }));
+        }
+        Promise.all(animations.map((a) => a.finished)).catch(() => undefined).then(() => {
+            if (generation.current === current) setOpen(false);
+        });
     };
 
     useEffect(() => {
@@ -64,20 +99,34 @@ export function HeaderSearch() {
         };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Glide from the hero's search field into place, while the backdrop and results fade in.
+    // Hides the hero field while the overlay stands in for it (until the closing animation has ended).
     useIsomorphicLayoutEffect(() => {
-        const panel = panelRef.current, rect = from.current;
-        if (!open || !panel || !rect || prefersReducedMotion()) return;
+        document.documentElement.toggleAttribute("data-search-open", open);
+    }, [open]);
+
+    // Glide from the hero's search field into place, while the backdrop and results fade in
+    // and the hero closes up around the field that's now gone.
+    useIsomorphicLayoutEffect(() => {
+        const panel = panelRef.current;
+        if (!open || !panel) return;
+        const reduced = prefersReducedMotion();
+        const hero = heroSearch();
+        // Opened from elsewhere (top bar, shortcut, link) while the hero field is in view:
+        // the overlay still comes out of the field, since the field is what disappears.
+        const rect = from.current ?? (hero && !fold.current && onScreen(hero)
+            ? hero.querySelector(".searchBox")!.getBoundingClientRect() : null);
+        // Only on screen: folding a hero above the viewport would shift the page under the visitor.
+        if (hero && !fold.current && onScreen(hero)) {
+            hero.getAnimations().forEach((a) => a.cancel()); // an unfold still running
+            fold.current = hero.animate(
+                [{ height: `${hero.offsetHeight}px`, marginTop: getComputedStyle(hero).marginTop }, { height: "0px", marginTop: "0px" }],
+                { ...(reduced ? { duration: 0 } : OPEN), fill: "forwards" });
+        }
+        if (reduced) return;
         from.current = null;
-        const field = panel.querySelector(".searchBox")!.getBoundingClientRect();
-        const dx = rect.left - field.left, dy = rect.top - field.top, scale = rect.width / field.width;
-        const timing = { duration: 420, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" };
-        panel.animate([
-            { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, transformOrigin: `${field.left - panel.getBoundingClientRect().left}px 0`, boxShadow: "none", backgroundColor: "transparent", borderColor: "transparent" },
-            { transform: "none", transformOrigin: `${field.left - panel.getBoundingClientRect().left}px 0` },
-        ], timing);
-        panel.querySelectorAll(".below, .searchMode").forEach((el) =>
-            el.animate([{ opacity: 0 }, { opacity: 0, offset: 0.5 }, { opacity: 1 }], timing));
+        if (rect) glide(panel, rect, "in");
+        else panel.animate([{ opacity: 0, transform: "translateY(-8px) scale(0.98)" }, { opacity: 1, transform: "none" }],
+            { duration: 220, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
     }, [open, session]);
 
     return (
@@ -90,7 +139,7 @@ export function HeaderSearch() {
             </button>
             {open && (
                 <>
-                    <div className="searchBackdrop" onPointerDown={hide} />
+                    {createPortal(<div className="searchBackdrop" ref={backdropRef} onClick={hide} />, document.body)}
                     <div className="headerSearchPanel" id="headerSearch" ref={panelRef}>
                         <SearchBox key={session} autoFocus initialQuery={initial} syncUrl />
                     </div>
@@ -98,4 +147,34 @@ export function HeaderSearch() {
             )}
         </>
     );
+}
+
+const OPEN: KeyframeAnimationOptions = { duration: 420, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" };
+const CLOSE: KeyframeAnimationOptions = { duration: 320, easing: "cubic-bezier(0.4, 0, 0.6, 1)" };
+
+const heroSearch = () => document.querySelector<HTMLElement>(".heroSearch.entry");
+const onScreen = (el: Element) => {
+    const r = el.getBoundingClientRect();
+    return r.bottom > 0 && r.top < window.innerHeight;
+};
+
+/**
+ * Moves the panel between the hero's search field (`rect`) and its own place: the panel shrinks
+ * onto the field and loses its frame, while everything below the field fades.
+ */
+function glide(panel: HTMLElement, rect: DOMRect, direction: "in" | "out") {
+    const field = panel.querySelector(".searchBox")!.getBoundingClientRect();
+    const dx = rect.left - field.left, dy = rect.top - field.top, scale = rect.width / field.width;
+    const transformOrigin = `${field.left - panel.getBoundingClientRect().left}px 0`;
+    const away = { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, transformOrigin, boxShadow: "none", backgroundColor: "transparent", borderColor: "transparent" };
+    const home = { transform: "none", transformOrigin };
+    const opening = direction === "in";
+    const timing: KeyframeAnimationOptions = opening ? OPEN : { ...CLOSE, fill: "forwards" };
+    const animations = [panel.animate(opening ? [away, home] : [home, away], timing)];
+    panel.querySelectorAll(".below, .searchMode").forEach((el) => animations.push(el.animate(opening
+        ? [{ opacity: 0 }, { opacity: 0, offset: 0.5 }, { opacity: 1 }]
+        : [{ opacity: 1 }, { opacity: 0, offset: 0.4 }, { opacity: 0 }], timing)));
+    // The typed query hands back to the hero's (empty) field.
+    if (!opening) animations.push(panel.querySelector("input")!.animate([{ opacity: 1 }, { opacity: 1, offset: 0.6 }, { opacity: 0 }], timing));
+    return animations;
 }

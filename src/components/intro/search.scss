@@ -61,6 +61,15 @@
 
 .below { position: relative; }
 
+// While the overlay is open it stands in for the hero field: it glides out of the field and back in,
+// so the field itself is hidden and its suggestions fade out (and back in once it has landed).
+.heroSearch.entry .below { transition: opacity 0.25s ease; }
+:root[data-search-open] .heroSearch.entry {
+  overflow: hidden; // folded away while the overlay is open
+  .searchBox { visibility: hidden; }
+  .below { opacity: 0; pointer-events: none; }
+}
+
 .suggestions.hidden { visibility: hidden; }
 .headerSearchPanel .suggestions.hidden { display: none; }
 

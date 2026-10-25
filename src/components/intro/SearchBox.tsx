@@ -159,8 +159,8 @@ interface Props {
     /** Query to start with (e.g. handed over from the hero). */
     initialQuery?: string;
     /**
-     * Entry point only (the hero): shows no results itself, but hands what's typed over to the search
-     * overlay, together with its position so the overlay can glide out of it.
+     * Entry point only (the hero): shows no results itself, but opens the search overlay as soon as
+     * it's focused, together with its position so the overlay can glide out of it.
      */
     entry?: boolean;
 }
@@ -185,7 +185,6 @@ export function SearchBox({ network, animate = false, autoFocus, syncUrl = false
     }, [autoFocus]);
 
     const handOver = (q: string) => {
-        if (!q) return;
         openSearch(q, formRef.current?.getBoundingClientRect());
         inputRef.current?.blur();
     };
@@ -225,14 +224,14 @@ export function SearchBox({ network, animate = false, autoFocus, syncUrl = false
 
     return (
         <div className={"heroSearch" + (entry ? " entry" : "")}>
-            <form role="search" className="searchBox" ref={formRef} onSubmit={(e) => { e.preventDefault(); if (entry) handOver(query); }}>
+            <form role="search" className="searchBox" ref={formRef} onSubmit={(e) => e.preventDefault()}>
                 <IoSearch />
                 <input ref={inputRef} type="search" value={entry ? "" : query} placeholder={placeholder || ui.placeholder}
                        aria-label={ui.label} autoComplete="off" spellCheck={false}
                        role="combobox" aria-expanded={results.length > 0} aria-controls={`${id}-results`}
                        aria-activedescendant={active >= 0 ? optionId(active) : undefined}
                        onKeyDown={onKeyDown}
-                       onFocus={() => startSemanticSearch(lang)}
+                       onFocus={() => { startSemanticSearch(lang); if (entry) handOver(""); }}
                        onChange={(e) => (entry ? handOver(e.target.value) : setQuery(e.target.value))} />
                 {query && <button type="button" className="clear" aria-label={ui.clear} onClick={() => setQuery("")}><IoClose /></button>}
             </form>
