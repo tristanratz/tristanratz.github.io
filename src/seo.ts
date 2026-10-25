@@ -49,11 +49,13 @@ export function pageMeta(route: Route): PageMeta {
 
     const project = route.project ? getProjects(route.lang).find((x) => x.slug === route.project) : undefined;
     if (project) {
+        // Social previews get the JPG; not every crawler reads WebP.
+        const image = site + project.image.replace(/\.webp$/, ".jpg");
         return {
             lang: route.lang, url, alternates, type: "article",
             title: `${project.name} – ${name}`,
             description: shorten(project.description),
-            image: site + project.image,
+            image,
             jsonLd: {
                 "@context": "https://schema.org",
                 "@type": project.name.startsWith("Paper") ? "ScholarlyArticle" : "CreativeWork",
@@ -61,7 +63,7 @@ export function pageMeta(route: Route): PageMeta {
                 headline: project.name,
                 description: project.description,
                 url,
-                image: site + project.image,
+                image,
                 inLanguage: route.lang,
                 dateCreated: project.date,
                 keywords: project.technologies.join(", "),

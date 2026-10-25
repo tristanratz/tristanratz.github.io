@@ -84,6 +84,7 @@
 
   .cardImage {
     aspect-ratio: 16 / 10;
+    background-color: var(--line); // until the image is loaded
     background-size: cover;
     background-position: center;
   }

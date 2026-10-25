@@ -52,12 +52,28 @@ export function Projects() {
         navigate({ ...route, project: i === null ? null : projects[i].slug }, { replace: i === null });
     // The card currently carrying the shared-element names (only during a transition).
     const [morphing, setMorphing] = useState<number | null>(null);
-    // Background layers are only mounted once a project has been visited, so images load lazily.
-    const [seen, setSeen] = useState<Set<number>>(() => new Set([0, 1]));
+    // Images load lazily: nothing until the section comes near the viewport, then the active
+    // project and its neighbours, and every project that has been passed since.
+    const sectionRef = useRef<HTMLElement>(null);
+    const [near, setNear] = useState(false);
+    const [seen, setSeen] = useState<Set<number>>(() => new Set());
 
     useEffect(() => {
-        setSeen((s) => s.has(active) && s.has(active + 1) ? s : new Set([...s, active, active + 1]));
-    }, [active]);
+        const observer = new IntersectionObserver(([entry]) => {
+            if (!entry.isIntersecting) return;
+            setNear(true);
+            observer.disconnect();
+        }, { rootMargin: "100% 0px" });
+        observer.observe(sectionRef.current!);
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        if (!near) return;
+        const wanted = [active - 1, active, active + 1].filter((i) => i >= 0 && i < projects.length);
+        setSeen((s) => wanted.every((i) => s.has(i)) ? s : new Set([...s, ...wanted]));
+    }, [near, active, projects.length]);
+    const image = (i: number) => (seen.has(i) ? `url(${projects[i].image})` : undefined);
 
     const scrollTo = useCallback((i: number, smooth = true) => {
         const track = trackRef.current!;
@@ -198,11 +214,11 @@ export function Projects() {
     const current = open !== null ? projects[open] : null;
 
     return (
-        <section className="projects" id="projects">
+        <section className="projects" id="projects" ref={sectionRef}>
             <div className="projectsBg" aria-hidden="true">
-                {projects.map((p, i) => seen.has(i) && (
+                {projects.map((_, i) => seen.has(i) && (
                     <div key={i} className={"bgLayer" + (i === active ? " active" : "")}
-                         style={{ backgroundImage: `url(${p.image})` }} />
+                         style={{ backgroundImage: image(i) }} />
                 ))}
             </div>
 
@@ -224,7 +240,7 @@ export function Projects() {
                              style={vt("project-card", morphing === i)}
                              onClick={() => (i === active ? openProject(i) : go(i))}>
                         <div className="cardImage"
-                             style={{ backgroundImage: `url(${p.image})`, ...vt("project-image", morphing === i) }} />
+                             style={{ backgroundImage: image(i), ...vt("project-image", morphing === i) }} />
                         <div className="cardBody">
                             <p className="eyebrow">{p.date}</p>
                             <h3 className="serif">

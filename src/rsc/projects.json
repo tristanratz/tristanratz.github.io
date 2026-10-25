@@ -54,7 +54,7 @@
       "In this work, we examine two novel strategies to approximate SCUs: generating SCU approximations from AMR meaning representations (SMUs) and from large language models (SGUs), respectively. We find that while STUs and SMUs are competitive, the best approximation quality is achieved by SGUs. We also show through a simple sentence-decomposition baseline (SSUs) that SCUs (and their approximations) offer the most value when ranking short summaries, but may not help as much when ranking systems or longer summaries."
     ],
     "language": "en",
-    "image": "/img/scu.jpg",
+    "image": "/img/scu.webp",
     "date": "2024",
     "github": "https://github.com/tristanratz/SCU-text-evaluation",
     "link": "https://arxiv.org/abs/2404.01701",
@@ -89,7 +89,7 @@
       "In this work we establish a retrieval corpus, build a RAG pipeline, fine-tune a language model on task specific data in a parameter efficient way to extract knowledge from provided contexts and subsequently train a reranker to predict the probability a document is going to help the LLM generate the right answer on 25 datasets. We establish five distinct pipelines which we evaluate on faithfulness, answer relevancy, answer semantic similarity, context recall and context relevancy. We find that a out of the box pre-trained reranker in combination with our fine-tuned model works best on a range of scores, with a third-party LLM with our reranker provides the answer most closely to the ground truth. The code and models are available open source."
     ],
     "language": "en",
-    "image": "/img/thesis.jpg",
+    "image": "/img/thesis.webp",
     "date": "2024",
     "github": "https://github.com/tristanratz/ITRF",
     "keywords": [
@@ -125,7 +125,7 @@
       "Read what the dutch space organisation (NSO) wrote about us down below."
     ],
     "language": "en",
-    "image": "/img/green_roofs.jpg",
+    "image": "/img/green_roofs.webp",
     "date": "2022",
     "link": "https://www.spaceoffice.nl/nl/nieuws/588/studenten-tu-e-ontwikkelen-prototype-ruimtevaarttoepassing.html",
     "keywords": [
@@ -165,7 +165,7 @@
       "Try it out for free with the link below."
     ],
     "language": "en",
-    "image": "/img/yachtchat.jpg",
+    "image": "/img/yachtchat.webp",
     "date": "2021",
     "link": "https://yacht-chat.com",
     "keywords": [
@@ -207,7 +207,7 @@
       "The source code is available on GitHub."
     ],
     "language": "en",
-    "image": "/img/imagesegmentation.jpg",
+    "image": "/img/imagesegmentation.webp",
     "date": "2021",
     "github": "https://github.com/tristanratz/Interactive-Image-Segmentation",
     "keywords": [
@@ -245,7 +245,7 @@
       "The podcast is available on german on all major platforms, including Apple Podcast, Google Podcast and Spotify."
     ],
     "language": "en",
-    "image": "/img/podcast.jpg",
+    "image": "/img/podcast.webp",
     "date": "2020",
     "link": "https://anchor.fm/kixperts/episodes/04-KI-Fotofinanzierung-mit-Tobias--Stephan-und-Tristan-eipguk/a-a32frr8",
     "keywords": [
@@ -281,7 +281,7 @@
       "This project gave me a strong basis to work on further web projects."
     ],
     "language": "en",
-    "image": "/img/website.jpg",
+    "image": "/img/website.webp",
     "date": "2020",
     "github": "https://github.com/tristanratz/React-Template",
     "keywords": [
@@ -316,7 +316,7 @@
       "Our system was working more accurate and even faster than existing solutions (like cdQA by BNP Paribas)."
     ],
     "language": "en",
-    "image": "/img/qa.jpg",
+    "image": "/img/qa.webp",
     "date": "2019",
     "link": "https://medium.com/@tristanratz/building-a-question-answering-system-bb49c320140c",
     "keywords": [
@@ -351,7 +351,7 @@
       "To see the project page on Github click on the link down below."
     ],
     "language": "en",
-    "image": "/img/chatapp.jpg",
+    "image": "/img/chatapp.webp",
     "date": "2019",
     "github": "https://github.com/tristanratz/chatapp",
     "keywords": [
@@ -383,7 +383,7 @@
       "The website (link below) was build on top of my previous project (CMS) and operates with it until today. I also created the corporate design for flyers, business cards and signs in the building."
     ],
     "language": "en",
-    "image": "/img/ugg.jpg",
+    "image": "/img/ugg.webp",
     "date": "2016",
     "link": "http://uro-gross-gerau.de/",
     "keywords": [
@@ -442,7 +442,7 @@
       "It was the first project I created using wordpress. I implemented my own wordpress theme and setup the website using wordpress. You can look at the resulting website at the link down below."
     ],
     "language": "en",
-    "image": "/img/code.jpg",
+    "image": "/img/code.webp",
     "date": "2014",
     "link": "http://uro-reinheim.de/",
     "keywords": [

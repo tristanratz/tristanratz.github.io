@@ -17,6 +17,9 @@ const links = map.flatMap((p, i) => p.neighbors.map((j) => [i, j] as const));
  * dimension becomes depth (size, brightness, parallax). Everything drifts gently; the pointer tilts
  * the space and shifts the depth layers.
  */
+
+/** Small version of a project image (made by scripts/images.sh); SVGs scale anyway. */
+const thumbnail = (image: string) => (image.endsWith(".webp") ? image.replace("/img/", "/img/thumbs/") : image);
 export function ProjectMap({ projects, onOpen, onFocus }: Props) {
     const ui = useUi().projects;
     const [hover, setHover] = useState<number | null>(null);
@@ -109,7 +112,7 @@ export function ProjectMap({ projects, onOpen, onFocus }: Props) {
                             onMouseEnter={() => focus(i)} onMouseLeave={() => focus(null)}
                             onFocus={() => focus(i)} onBlur={() => focus(null)}
                             onClick={() => onOpen(i)}>
-                        <span className="thumb" style={{ backgroundImage: `url(${project.image})` }} />
+                        <span className="thumb" style={{ backgroundImage: `url(${thumbnail(project.image)})` }} />
                         <span className="label">{project.name}</span>
                     </button>
                 ))}
