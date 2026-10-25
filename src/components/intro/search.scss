@@ -1,0 +1,209 @@
+// Search box in the hero: answers questions about Tristan from the site's own data.
+.searchBox {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 0 20px;
+  height: 60px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus-within {
+    border-color: var(--accent);
+    box-shadow: var(--shadow), 0 0 0 4px var(--accent-soft);
+  }
+
+  > svg { flex-shrink: 0; font-size: 1.25rem; color: var(--muted); }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font: inherit;
+    font-size: 1.05rem;
+    color: var(--text);
+    &::placeholder { color: var(--muted); opacity: 0.8; }
+    &::-webkit-search-cancel-button { display: none; }
+  }
+
+  .clear {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    &:hover { color: var(--text); }
+  }
+}
+
+.searchMode {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+
+  &.loading { animation: modePulse 1.2s ease-in-out infinite; }
+  &.ready::before { content: "● "; color: #3f9d6b; }
+  a { text-decoration: underline; text-underline-offset: 0.2em; }
+}
+
+@keyframes modePulse { 50% { opacity: 0.5; } }
+
+.below { position: relative; }
+
+.suggestions.hidden { visibility: hidden; }
+.headerSearchPanel .suggestions.hidden { display: none; }
+
+// In the hero the results float over the content below instead of pushing the centred layout around.
+.heroContent .results {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 1rem;
+
+  button {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-size: 0.85rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    &:hover { color: var(--text); border-color: var(--accent); }
+  }
+}
+
+.results {
+  width: 100%;
+  text-align: left;
+
+  .empty { margin: 1.25rem 0 0; text-align: center; color: var(--muted); }
+
+  .kind {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+}
+
+.answerCard {
+  margin-top: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  animation: answerIn 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  h3 { margin: 0.2rem 0 0.4rem; font-size: 1.15rem; letter-spacing: -0.02em; }
+  p { margin: 0; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+
+  .docAction {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 1rem;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 999px;
+    background: var(--text);
+    color: var(--bg);
+    font-weight: 600;
+    font-size: 0.88rem;
+    cursor: pointer;
+  }
+}
+
+.related {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0 0.5rem;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.92rem;
+    .kind { flex-shrink: 0; width: 6.5rem; }
+  }
+
+  button, a {
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--line);
+    text-underline-offset: 0.25em;
+    &:hover { text-decoration-color: var(--accent); }
+  }
+}
+
+@keyframes answerIn {
+  from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .answerCard { animation: none; }
+}
+
+// Matched words, keyboard selection and the "why this result" explanation.
+.results mark {
+  background: var(--accent-soft);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 1px;
+  box-shadow: 0 1px 0 var(--accent);
+}
+
+.answerCard.active { box-shadow: var(--shadow), 0 0 0 2px var(--accent); }
+.related li.active { background: var(--accent-soft); border-radius: 8px; }
+
+.explain {
+  margin-top: 0.9rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+
+  summary {
+    width: fit-content;
+    cursor: pointer;
+    font-weight: 600;
+    list-style: none;
+    &::-webkit-details-marker { display: none; }
+    &::before { content: "+ "; }
+    &:hover { color: var(--text); }
+  }
+  &[open] summary::before { content: "– "; }
+
+  ul { margin: 0.5rem 0 0; padding-left: 1rem; }
+  li { margin: 0.2rem 0; }
+  b { color: var(--text); }
+}
