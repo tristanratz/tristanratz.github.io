@@ -52,6 +52,8 @@
   font-size: 0.78rem;
   color: var(--muted);
 
+  &.off { display: none; } // kept in the DOM for the overlay's fade-in
+
   &.indexing { animation: modePulse 1.2s ease-in-out infinite; }
   &.ready::before { content: "● "; color: #3f9d6b; }
   a { text-decoration: underline; text-underline-offset: 0.2em; }
@@ -63,10 +65,11 @@
 
 // While the overlay is open it stands in for the hero field: it glides out of the field and back in,
 // so the field itself is hidden and its suggestions fade out (and back in once it has landed).
-.heroSearch.entry .below { transition: opacity 0.25s ease; }
+.heroSearch.entry .below, .heroSearch.entry input { transition: opacity 0.25s ease; }
 :root[data-search-open] .heroSearch.entry {
   overflow: hidden; // folded away while the overlay is open
   .searchBox { visibility: hidden; }
+  input { opacity: 0; }
   .below { opacity: 0; pointer-events: none; }
 }
 

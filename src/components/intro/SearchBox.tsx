@@ -236,9 +236,8 @@ export function SearchBox({ network, animate = false, autoFocus, syncUrl = false
                 {query && <button type="button" className="clear" aria-label={ui.clear} onClick={() => setQuery("")}><IoClose /></button>}
             </form>
 
-            {!entry && status !== "off" && (
-                <p className={"searchMode " + status} role="status">{ui.status[status]}</p>
-            )}
+            {/* Always rendered in the overlay, so its opening animation can fade it in. */}
+            {!entry && <p className={"searchMode " + status} role="status">{status !== "off" && ui.status[status]}</p>}
 
             <div className="below">
             {/* Kept in place (just hidden) while typing, so the hero layout doesn't jump. */}

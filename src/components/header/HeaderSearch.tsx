@@ -163,18 +163,38 @@ const onScreen = (el: Element) => {
  * onto the field and loses its frame, while everything below the field fades.
  */
 function glide(panel: HTMLElement, rect: DOMRect, direction: "in" | "out") {
-    const field = panel.querySelector(".searchBox")!.getBoundingClientRect();
+    const box = panel.querySelector<HTMLElement>(".searchBox")!;
+    const field = box.getBoundingClientRect();
     const dx = rect.left - field.left, dy = rect.top - field.top, scale = rect.width / field.width;
     const transformOrigin = `${field.left - panel.getBoundingClientRect().left}px 0`;
-    const away = { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, transformOrigin, boxShadow: "none", backgroundColor: "transparent", borderColor: "transparent" };
+    const away = { transform: `translate(${dx}px, ${dy}px) scale(${scale})`, transformOrigin };
     const home = { transform: "none", transformOrigin };
     const opening = direction === "in";
     const timing: KeyframeAnimationOptions = opening ? OPEN : { ...CLOSE, fill: "forwards" };
-    const animations = [panel.animate(opening ? [away, home] : [home, away], timing)];
+    // The movement follows the snappy curve; the panel's frame fades on its own, gentler curve,
+    // only while the panel is clearly larger than the field, so it doesn't flash in or out.
+    const look = (el: Element) => {
+        const style = getComputedStyle(el);
+        return { backgroundColor: style.backgroundColor, borderColor: style.borderColor, boxShadow: style.boxShadow };
+    };
+    const frame = look(panel), noFrame = { backgroundColor: "transparent", borderColor: "transparent", boxShadow: "none" };
+    const fade: KeyframeAnimationOptions = { duration: timing.duration, easing: "ease-in-out", fill: timing.fill };
+    const animations = [
+        panel.animate(opening ? [away, home] : [home, away], timing),
+        panel.animate(opening
+            ? [noFrame, { ...noFrame, offset: 0.15 }, frame]
+            : [frame, { ...noFrame, offset: 0.8 }, noFrame], fade),
+    ];
+    // The field inside the panel takes on the hero field's look at the far end, so swapping
+    // one for the other is invisible.
+    const heroBox = document.querySelector(".heroSearch.entry .searchBox");
+    if (heroBox) animations.push(box.animate(opening ? [look(heroBox), look(box)] : [look(box), look(heroBox)], timing));
     panel.querySelectorAll(".below, .searchMode").forEach((el) => animations.push(el.animate(opening
         ? [{ opacity: 0 }, { opacity: 0, offset: 0.5 }, { opacity: 1 }]
         : [{ opacity: 1 }, { opacity: 0, offset: 0.4 }, { opacity: 0 }], timing)));
-    // The typed query hands back to the hero's (empty) field.
-    if (!opening) animations.push(panel.querySelector("input")!.animate([{ opacity: 1 }, { opacity: 1, offset: 0.6 }, { opacity: 0 }], timing));
+    // The text in the field (query or placeholder) cross-fades with the hero field's own.
+    animations.push(panel.querySelector("input")!.animate(opening
+        ? [{ opacity: 0 }, { opacity: 1, offset: 0.4 }, { opacity: 1 }]
+        : [{ opacity: 1 }, { opacity: 1, offset: 0.6 }, { opacity: 0 }], timing));
     return animations;
 }
