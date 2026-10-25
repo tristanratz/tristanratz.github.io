@@ -56,6 +56,15 @@
   line-height: 1.7;
 
   p { margin: 0 0 1.1em; }
+  // The key points, marked like with a highlighter.
+  strong {
+    font-weight: 650;
+    color: var(--text);
+    background: linear-gradient(transparent 60%, var(--accent-soft) 60%);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding: 0 0.1em;
+  }
 }
 
 

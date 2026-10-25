@@ -20,6 +20,7 @@ export interface Person {
     favTec: string[];
     qualities: string[];
     interests: string[];
+    /** Paragraphs; **…** marks what's highlighted on the page. */
     about: string[];
     job: string;
     employer: string;
@@ -55,9 +56,9 @@ export const person: Person = {
     qualities: ["team player", "analytical", "curious", "fast learner"],
     interests: ["Large Language Models", "Retrieval Augmented Generation", "Search & Knowledge", "Human-centered AI"],
     about: [
-        "At Serviceware, I manage the teams around AI, search and knowledge of the AI-native Serviceware Platform. We are working on the future of AI-native Enterprise Service Management (ESM) and, with Agent Hub, redefining the way people work in the service industry.",
-        "Before that I worked as a Generative AI consultant at Genow AI and studied Information Systems at TU Darmstadt, where I spent most of my time on natural language processing, from question answering to retrieval augmented generation.",
-        "What I keep coming back to: in a product, AI is a means to an end, never an end in itself. A model is only as good as the experience it enables. If people notice the AI more than the improvement, something went wrong.",
+        "At Serviceware, I manage the **teams around AI, search and knowledge** of the **AI-native Serviceware Platform**. We are working on the **future of AI-native Enterprise Service Management (ESM)** and, with **Agent Hub**, redefining the way people work in the service industry.",
+        "Before that I worked as a **Generative AI consultant** at Genow AI and studied **Information Systems at TU Darmstadt**, where I spent most of my time on **natural language processing**, from question answering to retrieval augmented generation.",
+        "What I keep coming back to: in a product, **AI is a means to an end, never an end in itself**. A model is only as good as **the experience it enables**. If people notice the AI more than the improvement, something went wrong.",
     ],
     path: [
         {when: "2026", period: "Since 2026", title: "Engineering Team Lead (AI, Search & Knowledge)", where: "Serviceware", url: "https://www.serviceware-se.com", note: "AI-native Enterprise Service Management with Agent Hub"},
@@ -85,9 +86,9 @@ const german: Partial<Omit<Person, "path">> & { path: Partial<Person["path"][num
     qualities: ["Teamplayer", "analytisch", "neugierig", "lernt schnell"],
     interests: ["Große Sprachmodelle", "Retrieval Augmented Generation", "Suche & Wissen", "Menschzentrierte KI"],
     about: [
-        "Bei Serviceware verantworte ich die Teams rund um KI, Suche und Wissen der KI-nativen Serviceware Platform. Wir arbeiten an der Zukunft des KI-nativen Enterprise Service Management (ESM) und definieren mit Agent Hub neu, wie Menschen in der Service-Branche arbeiten.",
-        "Davor war ich Generative-AI-Consultant bei Genow AI und habe Wirtschaftsinformatik (Information Systems) an der TU Darmstadt studiert, mit Schwerpunkt Natural Language Processing, von Question Answering bis Retrieval Augmented Generation.",
-        "Worauf ich immer wieder zurückkomme: In Produkten ist KI Mittel zum Zweck und kein Selbstzweck. Ein Modell ist nur so gut wie die Erfahrung, die es ermöglicht. Wenn Menschen die KI mehr bemerken als die Verbesserung, ist etwas schiefgelaufen.",
+        "Bei Serviceware verantworte ich die **Teams rund um KI, Suche und Wissen** der **KI-nativen Serviceware Platform**. Wir arbeiten an der **Zukunft des KI-nativen Enterprise Service Management (ESM)** und definieren mit **Agent Hub** neu, wie Menschen in der Service-Branche arbeiten.",
+        "Davor war ich **Generative-AI-Consultant** bei Genow AI und habe **Wirtschaftsinformatik (Information Systems) an der TU Darmstadt** studiert, mit Schwerpunkt **Natural Language Processing**, von Question Answering bis Retrieval Augmented Generation.",
+        "Worauf ich immer wieder zurückkomme: In Produkten ist **KI Mittel zum Zweck und kein Selbstzweck**. Ein Modell ist nur so gut wie **die Erfahrung, die es ermöglicht**. Wenn Menschen die KI mehr bemerken als die Verbesserung, ist etwas schiefgelaufen.",
     ],
     path: [
         {period: "Seit 2026", note: "KI-natives Enterprise Service Management mit Agent Hub"},

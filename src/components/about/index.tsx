@@ -24,6 +24,10 @@ function InfoCard({ id, icon, label, index, children }: CardProps) {
     );
 }
 
+/** Renders the **…** parts of a paragraph highlighted. */
+const highlight = (text: string) =>
+    text.split(/\*\*(.+?)\*\*/).map((part, i) => (i % 2 ? <strong key={i}>{part}</strong> : part));
+
 export function About() {
     const ref = useReveal<HTMLElement>();
     const ui = useUi().about;
@@ -44,7 +48,7 @@ export function About() {
                     </header>
 
                     <div className="profileText">
-                        {person.about.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+                        {person.about.map((paragraph, i) => <p key={i}>{highlight(paragraph)}</p>)}
                     </div>
 
                 </article>

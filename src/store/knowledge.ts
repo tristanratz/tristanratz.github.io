@@ -47,7 +47,7 @@ export function getDocs(lang: Lang): Doc[] {
             action: showIn("about-working-at"),
         },
         ...person.about.map((paragraph): Doc => ({
-            kind: "Profile", title: l.about, answer: paragraph, keywords: "about who background über Person Hintergrund",
+            kind: "Profile", title: l.about, answer: paragraph.replace(/\*\*/g, ""), keywords: "about who background über Person Hintergrund",
             action: showIn("profile"),
         })),
         {
