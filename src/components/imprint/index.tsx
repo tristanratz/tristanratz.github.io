@@ -1,4 +1,6 @@
-import retrieveImprint from "../../store/imprint";
+import { useUi } from "../../i18n";
+import { useRoute } from "../../router";
+import { ImprintText } from "../../store/imprint";
 import { Modal } from "../modal";
 import "./style.scss";
 
@@ -8,9 +10,11 @@ interface Props {
 }
 
 export function Imprint({ open, onClose }: Props) {
+    const ui = useUi();
+    const { lang } = useRoute().route;
     return (
-        <Modal open={open} onClose={onClose} label="Imprint and privacy">
-            <div className="imprintContent">{retrieveImprint()}</div>
+        <Modal open={open} onClose={onClose} label={ui.contact.imprint}>
+            <div className="imprintContent" lang="de"><ImprintText english={lang === "en"} /></div>
         </Modal>
     );
 }
