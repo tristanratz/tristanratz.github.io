@@ -13,6 +13,8 @@ import { CELL, CROSS, CROSS_ANGLE, CROSS_SHARE, RING_CRESTS, RING_HEIGHT, RING_L
  */
 
 const MAX_WAKES = 100;
+// Safari's WebGL is much slower per pixel: it draws the (soft) water at plain CSS resolution.
+const SAFARI = typeof navigator !== "undefined" && /^((?!chrome|chromium|android).)*safari/i.test(navigator.userAgent);
 const MAX_BOATS = 8;
 
 const VERTEX = `
@@ -29,6 +31,7 @@ varying vec2 v_uv;
 uniform vec2 u_size;
 uniform float u_top;
 uniform float u_section;
+uniform float u_textCalm;   // 1: calm the water behind the timeline's text, 0: it's not there
 uniform float u_time;
 uniform vec2 u_swell;
 uniform float u_swellHeight;
@@ -155,7 +158,7 @@ void main() {
     float fade = smoothstep(0.0, 220.0, p.y) * smoothstep(0.0, 220.0, u_section - p.y)
         * smoothstep(0.0, 60.0, p.x) * smoothstep(0.0, 60.0, u_size.x - p.x);
     float text = (p.x - u_size.x * 0.5) / min(420.0, u_size.x * 0.45);
-    fade *= 1.0 - 0.45 * exp(-text * text * 2.0);
+    fade *= 1.0 - 0.45 * u_textCalm * exp(-text * text * 2.0);
     gl_FragColor = color * fade;
 }`;
 
@@ -201,7 +204,7 @@ export class WaterGL {
         gl.enableVertexAttribArray(position);
         gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
-        for (const name of ["u_boats", "u_size", "u_top", "u_section", "u_time", "u_swell", "u_swellHeight", "u_state", "u_grid", "u_trains", "u_phases", "u_wakes", "u_wakeCount", "u_dark"]) {
+        for (const name of ["u_boats", "u_size", "u_top", "u_section", "u_textCalm", "u_time", "u_swell", "u_swellHeight", "u_state", "u_grid", "u_trains", "u_phases", "u_wakes", "u_wakeCount", "u_dark"]) {
             this.uniforms[name] = gl.getUniformLocation(this.program, name);
         }
         gl.uniform4fv(this.uniforms.u_trains, TRAINS.flatMap((t) => [t.cos, t.sin, t.k, t.omega]));
@@ -220,10 +223,10 @@ export class WaterGL {
 
     /** Draws the rows `top`..`top + height` of the section (section coordinates). */
     render(sea: Sea, time: number, wakes: Wake[], boats: { x: number, y: number, heading: number, speed: number }[],
-           top: number, width: number, height: number, section: number, dark: boolean) {
+           top: number, width: number, height: number, section: number, dark: boolean, focus = false) {
         const gl = this.gl;
         if (!gl) return;
-        const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        const dpr = Math.min(window.devicePixelRatio || 1, SAFARI ? 1 : 1.5);
         const w = Math.max(1, Math.round(width * dpr)), h = Math.max(1, Math.round(height * dpr));
         if (this.canvas.width !== w || this.canvas.height !== h) {
             this.canvas.width = w;
@@ -249,6 +252,7 @@ export class WaterGL {
         gl.uniform2f(u.u_size, width, height);
         gl.uniform1f(u.u_top, top);
         gl.uniform1f(u.u_section, section);
+        gl.uniform1f(u.u_textCalm, focus ? 0 : 1);
         gl.uniform1f(u.u_time, time);
         gl.uniform2f(u.u_swell, sea.swell.x, sea.swell.y);
         gl.uniform1f(u.u_swellHeight, sea.swellHeight);

@@ -53,7 +53,12 @@ const SHADOWS = {
     night: { hull: { x: 7, y: 1 }, sail: { x: 22, y: 3 } },
 };
 const DEG = 180 / Math.PI;
-const ISOTACHS = [2, 4, 8, 16]; // knots
+// Isotachs on the Beaufort scale: each ring is where the wind reaches a force (its lower limit in knots).
+// The strongest, 8 Bft, lies close around the pointer.
+const ISOTACHS = [
+    { bft: 2, knots: 4 }, { bft: 3, knots: 7 }, { bft: 4, knots: 11 }, { bft: 5, knots: 17 },
+    { bft: 6, knots: 22 }, { bft: 7, knots: 28 }, { bft: 8, knots: 34 },
+];
 
 const el = <K extends keyof SVGElementTagNameMap>(name: K, attrs: Record<string, string | number>, parent?: Element) => {
     const node = document.createElementNS(SVG, name);
@@ -97,14 +102,14 @@ function sailShape(tack: number, length: number, boom: number, headX: number, he
 const leanSide = (boom: number) => Math.max(-1, Math.min(1, boom / 0.35));
 
 /** How far the boat leans (radians, +: towards starboard): heel from the wind to leeward, roll from the waves. */
-const tiltOf = (b: Boat) => leanSide(b.boom) * b.heel * 0.7 + b.roll; // up to ~40° of heel
+const tiltOf = (b: Boat) => leanSide(b.boom) * b.heel * (Math.PI / 2) * 0.95 + b.roll; // up to ~85°: knocked flat
 
 // Mainsail on the boom, jib from the bow to the masthead, sheeted a little tighter.
 /** Where the masthead is seen from above: out to the side as the boat leans, aft as the bow lifts. */
 // The mast is long, so small movements of the hull swing its top a long way: exaggerated a little.
 const mastheadOf = (b: Boat) => ({
     x: MAST - Math.sin(Math.max(-0.7, Math.min(0.7, b.pitch * 1.7))) * MAST_HEIGHT,
-    y: Math.sin(Math.max(-1.1, Math.min(1.1, tiltOf(b) * 1.15))) * MAST_HEIGHT,
+    y: Math.sin(Math.max(-1.5, Math.min(1.5, tiltOf(b)))) * MAST_HEIGHT,
 });
 
 /** Battens: short stiffeners across the mainsail's leech, which show its shape in the light. */
@@ -127,7 +132,8 @@ function sailPath(b: Boat) {
 
 interface Parts {
     hullShadow: SVGPathElement; sailShadow: SVGPathElement;
-    shading: SVGLinearGradientElement[]; // turned towards the light every frame
+    shading: SVGLinearGradientElement[]; // turned towards the light as the boat turns
+    shadedAt: number;
     colours: { stops: SVGStopElement[], role: "deck" | "sail" | "hull" }[];
     cabin: SVGRectElement; windows: SVGRectElement[];
     lamps: SVGGElement; reflections: SVGGElement;
@@ -145,9 +151,17 @@ interface Props {
     onScore?: (scores: number[]) => void;
     /** Fading out before being removed. */
     leaving?: boolean;
+    /** Wind setting (1 = default). */
+    wind?: number;
+    /** Shown alone (the timeline has stepped aside): the water needn't calm down behind its text. */
+    focus?: boolean;
 }
 
-export function Regatta({ section, onScore, leaving = false }: Props) {
+export function Regatta({ section, onScore, leaving = false, wind = 1, focus = false }: Props) {
+    const windRef = useRef(wind);
+    windRef.current = wind;
+    const focusRef = useRef(focus);
+    focusRef.current = focus;
     const svgRef = useRef<SVGSVGElement>(null);
     const waterRef = useRef<HTMLCanvasElement>(null);
     const scoreRef = useRef(onScore);
@@ -175,17 +189,30 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
         // Scene graph (above the water canvas): isotachs, shadows, wakes, buoys, boats, speed logs
         // and the wind streaks on top.
         const defs = el("defs", {}, svg);
-        const blur = el("filter", { id: "regattaBlur", x: "-50%", y: "-50%", width: "200%", height: "200%" }, defs);
-        el("feGaussianBlur", { stdDeviation: 2.2 }, blur);
-        const glow = el("filter", { id: "regattaGlow", x: "-200%", y: "-200%", width: "500%", height: "500%" }, defs);
-        el("feGaussianBlur", { stdDeviation: 1.6 }, glow);
-        const shine = el("filter", { id: "regattaShine", x: "-200%", y: "-200%", width: "500%", height: "500%" }, defs);
-        el("feGaussianBlur", { stdDeviation: 4 }, shine);
+        // No SVG blur filters anywhere: Safari recomputes them every frame. Soft edges come from radial
+        // gradients (glows) and a lighter, larger copy of each shadow (its penumbra) instead.
+        NAV_LIGHTS.forEach((light, k) => {
+            const g = el("radialGradient", { id: `regattaLamp${k}` }, defs);
+            el("stop", { offset: 0, "stop-color": light.color, "stop-opacity": 0.9 }, g);
+            el("stop", { offset: 0.35, "stop-color": light.color, "stop-opacity": 0.45 }, g);
+            el("stop", { offset: 1, "stop-color": light.color, "stop-opacity": 0 }, g);
+        });
         const layer = (name: string) => el("g", { class: name }, svg);
         const isobars = layer("isotachs");
         const reflections = layer("reflections");
         const shadows = layer("shadows"), wakes = layer("wakes"), buoys = layer("buoys"), boats = layer("boats"), splash = layer("spray"), logs = layer("logs"), air = layer("air");
-        shadows.setAttribute("filter", "url(#regattaBlur)");
+
+        // A shadow and its penumbra (a lighter copy, slightly larger) move and change together.
+        const shadowPair = (core: SVGPathElement) => {
+            const soft = core.cloneNode() as SVGPathElement;
+            soft.classList.add("penumbra");
+            core.before(soft);
+            const set = (name: string, value: string) => {
+                core.setAttribute(name, value);
+                soft.setAttribute(name, name === "transform" ? `${value} scale(1.12)` : value);
+            };
+            return { setAttribute: set } as unknown as SVGPathElement;
+        };
 
         const parts: Parts[] = sim.boats.map((_, i) => {
             const color = COLORS[i % COLORS.length];
@@ -220,17 +247,17 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
             // Navigation lights: a lamp with a halo on the boat, and their shine on the water around it.
             const lamps = el("g", {}, hull);
             const shineOnWater = el("g", {}, reflections);
-            for (const light of NAV_LIGHTS) {
-                el("circle", { cx: light.x, cy: light.y, r: 3.2, fill: light.color, filter: "url(#regattaGlow)", class: "halo" }, lamps);
+            NAV_LIGHTS.forEach((light, k) => {
+                el("circle", { cx: light.x, cy: light.y, r: 4.5, fill: `url(#regattaLamp${k})`, class: "halo" }, lamps);
                 el("circle", { cx: light.x, cy: light.y, r: 0.85, fill: light.color }, lamps);
-                el("circle", { cx: light.x * 1.15, cy: light.y * 1.9, r: 7, fill: light.color, filter: "url(#regattaShine)" }, shineOnWater);
-            }
+                el("circle", { cx: light.x * 1.15, cy: light.y * 1.9, r: 10, fill: `url(#regattaLamp${k})` }, shineOnWater);
+            });
             return {
-                hullShadow: el("path", { d: HULL, class: "hullShadow" }, shadows),
-                sailShadow: el("path", { class: "sailShadow" }, shadows),
+                hullShadow: shadowPair(el("path", { d: HULL, class: "hullShadow" }, shadows)),
+                sailShadow: shadowPair(el("path", { class: "sailShadow" }, shadows)),
                 wake: el("path", { fill: "none", stroke: color, "stroke-width": 1.4, "stroke-linecap": "round", "stroke-opacity": 0.35 }, wakes),
                 hull, deck, sail, battens, mast, boom, buoy, ring,
-                shading: [hullShade.g, deckShade.g, sailShade.g],
+                shading: [hullShade.g, deckShade.g, sailShade.g], shadedAt: NaN,
                 colours: [{ stops: hullShade.stops, role: "hull" }, { stops: deckShade.stops, role: "deck" }, { stops: sailShade.stops, role: "sail" }],
                 cabin, windows, lamps, reflections: shineOnWater,
                 log: el("text", { class: "log", fill: color }, logs),
@@ -238,8 +265,9 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
         });
 
         // Isotachs: lines of equal wind speed. The wind blows outwards from the pointer and weakens
-        // with distance, so they're circles around it; labelled in knots.
-        const rings = ISOTACHS.map((knots) => ({
+        // with distance, so they are circles around it; labelled in Beaufort and knots.
+        const rings = ISOTACHS.map(({ bft, knots }) => ({
+            bft,
             knots,
             circle: el("circle", { class: "isotach" }, isobars),
             label: el("text", { class: "isotachLabel" }, isobars),
@@ -248,16 +276,20 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
         // Wind streaks: short dashes across the whole visible water, flying with the wind;
         // more and longer where it blows harder.
         const streaks = Array.from({ length: 80 }, () => ({
-            x: 0, y: 0, age: 1, life: 1,
+            x: 0, y: 0, age: 1, life: 1, shown: false,
             line: el("line", { stroke: COLORS[0], "stroke-width": 1.2, "stroke-linecap": "round", opacity: 0 }, air),
         }));
         let nextStreak = 0, release = 0;
 
         // Only the part of the section on screen needs drawing.
-        let view = { top: 0, bottom: 0 };
+        // Where the section sits on the page is measured now and then; per frame the visible part
+        // follows from the scroll position, without asking the browser for layout.
+        let view = { top: 0, bottom: 0 }, sectionTop = 0, measured = 0;
+        const locate = () => { sectionTop = host.getBoundingClientRect().top + window.scrollY; };
         const measure = () => {
-            const r = host.getBoundingClientRect();
-            view = { top: -r.top - 40, bottom: -r.top + window.innerHeight + 40 };
+            if (++measured % 90 === 1) locate();
+            const top = window.scrollY - sectionTop;
+            view = { top: top - 40, bottom: top + window.innerHeight + 40 };
         };
 
         let lastLighting: typeof LIGHTING.day | null = null;
@@ -265,9 +297,10 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
             // Water: only the part on screen, with the canvas moved along to cover it.
             const top = Math.max(0, view.top), bottom = Math.min(sim.height, view.bottom);
             if (bottom > top) {
-                canvas.style.top = `${top}px`;
-                canvas.style.height = `${bottom - top}px`;
-                water.render(sea, sim.time, waveSources, sim.boats, top, sim.width, bottom - top, sim.height, dark());
+                const placeTop = `${Math.round(top)}px`, placeHeight = `${Math.round(bottom - top)}px`;
+                if (canvas.style.top !== placeTop) canvas.style.top = placeTop;
+                if (canvas.style.height !== placeHeight) canvas.style.height = placeHeight;
+                water.render(sea, sim.time, waveSources, sim.boats, top, sim.width, bottom - top, sim.height, dark(), focusRef.current);
             }
 
             const origin = sim.origin;
@@ -283,7 +316,7 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
                 ring.label.setAttribute("x", (origin.x + Math.cos(a) * r).toFixed(1));
                 ring.label.setAttribute("y", (origin.y + Math.sin(a) * r).toFixed(1));
                 ring.label.setAttribute("opacity", Math.min(1, sim.sourceStrength).toFixed(2));
-                ring.label.textContent = `${ring.knots} kn`;
+                ring.label.textContent = `${ring.bft} Bft · ${ring.knots} kn`;
             }
 
             const light = dark() ? SHADOWS.night : SHADOWS.day;
@@ -303,6 +336,7 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
                     p.lamps.querySelectorAll(".halo").forEach((h) => h.setAttribute("opacity", String(lit.lamps * 0.9)));
                     p.lamps.setAttribute("opacity", lit.lamps ? "1" : "0.55");
                     p.reflections.setAttribute("opacity", String(lit.lamps * 0.4));
+                    p.shadedAt = NaN;
                 });
             }
             sim.boats.forEach((b, i) => {
@@ -315,10 +349,15 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
                 p.hull.setAttribute("transform", `translate(${b.x.toFixed(1)} ${b.y.toFixed(1)}) ${rotate} scale(${(heave * ZOOM).toFixed(3)})`);
                 p.reflections.setAttribute("transform", `translate(${b.x.toFixed(1)} ${b.y.toFixed(1)}) ${rotate} scale(${ZOOM})`);
                 // Turn the shading towards the light: bright on the side facing it, dim away from it.
-                const towards = lit.toward - b.heading, gx = Math.cos(towards) * 0.5, gy = Math.sin(towards) * 0.5;
-                for (const g of p.shading) {
-                    g.setAttribute("x1", (0.5 + gx).toFixed(3)); g.setAttribute("y1", (0.5 + gy).toFixed(3));
-                    g.setAttribute("x2", (0.5 - gx).toFixed(3)); g.setAttribute("y2", (0.5 - gy).toFixed(3));
+                // Only when the boat has turned noticeably: every change makes the browser repaint it.
+                const towards = lit.toward - b.heading;
+                if (Math.abs(towards - p.shadedAt) > 0.03) {
+                    p.shadedAt = towards;
+                    const gx = Math.cos(towards) * 0.5, gy = Math.sin(towards) * 0.5;
+                    for (const g of p.shading) {
+                        g.setAttribute("x1", (0.5 + gx).toFixed(3)); g.setAttribute("y1", (0.5 + gy).toFixed(3));
+                        g.setAttribute("x2", (0.5 - gx).toFixed(3)); g.setAttribute("y2", (0.5 - gy).toFixed(3));
+                    }
                 }
                 p.deck.setAttribute("transform", `translate(0 ${(Math.sin(tilt) * 3.5).toFixed(2)}) scale(${Math.cos(b.pitch).toFixed(3)} ${Math.cos(tilt).toFixed(3)})`);
                 const boomAngle = Math.PI - b.boom;
@@ -353,14 +392,16 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
             });
             for (const d of spray) {
                 const t = d.age / d.life;
-                if (t >= 1) { d.drop.setAttribute("opacity", "0"); continue; }
+                if (t >= 1) { if (d.shown) { d.drop.setAttribute("opacity", "0"); d.shown = false; } continue; }
+                d.shown = true;
                 d.drop.setAttribute("cx", d.x.toFixed(1));
                 d.drop.setAttribute("cy", d.y.toFixed(1));
                 d.drop.setAttribute("opacity", (0.85 * (1 - t)).toFixed(2));
             }
             for (const c of confetti) {
                 const t = c.age / c.life;
-                if (t >= 1) { c.piece.setAttribute("opacity", "0"); continue; }
+                if (t >= 1) { if (c.shown) { c.piece.setAttribute("opacity", "0"); c.shown = false; } continue; }
+                c.shown = true;
                 // Seen from above, a piece flips as it tumbles: its width pulses.
                 const flip = Math.abs(Math.cos(c.angle / 40));
                 c.piece.setAttribute("transform", `translate(${c.x.toFixed(1)} ${c.y.toFixed(1)}) rotate(${c.angle.toFixed(0)}) scale(${(0.4 + flip * 0.6).toFixed(2)} 1)`);
@@ -368,7 +409,8 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
             }
             for (const streak of streaks) {
                 const t = streak.age / streak.life;
-                if (t >= 1) { streak.line.setAttribute("opacity", "0"); continue; }
+                if (t >= 1) { if (streak.shown) { streak.line.setAttribute("opacity", "0"); streak.shown = false; } continue; }
+                streak.shown = true;
                 const w = sim.windAt(streak.x, streak.y), len = Math.min(22, 4 + Math.hypot(w.x, w.y) / 7);
                 const n = Math.hypot(w.x, w.y) || 1;
                 streak.line.setAttribute("x1", streak.x.toFixed(1));
@@ -382,7 +424,7 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
         // Confetti for a boat that reaches its buoy: a burst of little pieces in its colour (and some
         // others), slowed by the air, spinning, fading as they settle.
         const confetti = Array.from({ length: 90 }, () => ({
-            x: 0, y: 0, vx: 0, vy: 0, angle: 0, spin: 0, age: 1, life: 1,
+            x: 0, y: 0, vx: 0, vy: 0, angle: 0, spin: 0, age: 1, life: 1, shown: false,
             piece: el("rect", { width: 5, height: 3, x: -2.5, y: -1.5, rx: 0.8, opacity: 0 }, air),
         }));
         let nextPiece = 0;
@@ -402,7 +444,7 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
         // Spray: droplets thrown off to both sides of the bow, more the faster a boat goes, and in
         // bursts, flying further, when its bow slams into a wave.
         const spray = Array.from({ length: 260 }, () => ({
-            x: 0, y: 0, vx: 0, vy: 0, age: 1, life: 1,
+            x: 0, y: 0, vx: 0, vy: 0, age: 1, life: 1, shown: false,
             drop: el("circle", { r: 1, fill: "#fff", opacity: 0 }, splash),
         }));
         let nextDrop = 0;
@@ -438,6 +480,7 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
 
         let scored = 0;
         const step = (dt: number) => {
+            sim.windScale = windRef.current;
             sim.step(dt);
             sea.update(sim, dt, sim.width / 2, (view.top + view.bottom) / 2);
             waveSources = sea.wakes(sim);
@@ -530,6 +573,7 @@ export function Regatta({ section, onScore, leaving = false }: Props) {
         document.addEventListener("visibilitychange", onVisibility);
         const resize = new ResizeObserver(() => {
             sim.resize(host.clientWidth, host.clientHeight);
+            locate();
             sea.resize(host.clientWidth, host.clientHeight);
             measure();
             draw();

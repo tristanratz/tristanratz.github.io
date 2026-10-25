@@ -14,6 +14,8 @@
  * inertia, the sails are trimmed to the apparent wind and swing to leeward, and the boat heels with it.
  */
 
+/** Apparent wind (px/s) whose full force on the sails would just lay a boat flat. */
+const KNOCKDOWN = 185;
 const MARGIN = 70;       // px: buoys stay this far from the edges
 const SHORE = 110;       // px: boats start bearing away from an edge this far off
 /** How close the camera is: boats, waves and wakes are drawn this much larger (speeds stay the same). */
@@ -33,7 +35,8 @@ export interface Boat {
     tackAge: number;  // seconds on the current tack
     target: { x: number, y: number };
     boom: number;     // sail angle relative to the stern, signed towards leeward
-    heel: number;     // 0..1, from the wind
+    heel: number;     // 0..1 of 90°, from the wind (1: knocked flat)
+    eased: number;    // 0..1: how far the crew has eased the sheets to depower in a blow
     roll: number;     // radians, from the waves (+: towards starboard)
     heave: number;    // height of the water under it
     lift: number;     // the same, smoothed for drawing
@@ -81,6 +84,17 @@ const sourceProfile = (d: number) =>
     (SOURCE * Math.exp(-d / REACH) + NEAR * Math.exp(-d / NEAR_REACH)) * (d / (d + EYE));
 // Distance from the pointer at which its wind is strongest; outside it, the wind only weakens.
 const PEAK = Array.from({ length: 400 }, (_, d) => d).reduce((best, d) => (sourceProfile(d) > sourceProfile(best) ? d : best), 1);
+/** A light breeze (knots) that reaches even the far edges while the pointer blows. */
+const FLOOR = 2.5;
+export const WIND_SCALE = { min: 0.3, max: 1.5 };
+
+/** Beaufort force for a wind speed in knots. */
+export function beaufort(knots: number) {
+    const limits = [1, 4, 7, 11, 17, 22, 28, 34, 41, 48, 56, 64];
+    let force = 0;
+    while (force < limits.length && knots >= limits[force]) force++;
+    return force;
+}
 /** px/s of wind per knot, and px/s of boat speed per knot. */
 export const WIND_KNOT = 7;
 export const BOAT_KNOT = 8;
@@ -124,9 +138,10 @@ export function bestHeading(from: number, bearing: number, knots: number, side: 
  */
 export function heelingForce(apparent: number) {
     const a = Math.abs(apparent);
-    if (a < 0.35) return 0;
-    if (a < 0.6) return (a - 0.35) / 0.25;
-    return clamp(1 - ((a - 0.6) / (Math.PI - 0.6)) * 0.92, 0, 1);
+    // Close-hauled the apparent wind comes in at only 25–30°: that's where the sails pull hardest sideways.
+    if (a < 0.3) return 0;
+    if (a < 0.44) return (a - 0.3) / 0.14;
+    return clamp(1 - ((a - 0.44) / (Math.PI - 0.44)) * 0.92, 0, 1);
 }
 
 export class RegattaSim {
@@ -135,6 +150,8 @@ export class RegattaSim {
     time = 0;
     /** Where the pointer blows from (section coordinates), or null when it's elsewhere. */
     source: { x: number, y: number } | null = null;
+    /** The wind setting: how strong the pointer blows (1 = default). */
+    windScale = 1;
     /** Eases in and out as the pointer enters and leaves. */
     sourceStrength = 0;
     /** Where the wind comes from: the pointer, or where it was last while the wind dies down. */
@@ -152,7 +169,7 @@ export class RegattaSim {
             const boat: Boat = {
                 x: MARGIN + random() * (width - 2 * MARGIN), y,
                 heading: random() * Math.PI * 2, speed: 0, tack: 0, tackAge: 0,
-                target: { x: 0, y: 0 }, boom: 0, heel: 0, roll: 0, heave: 0, lift: 0, pitch: 0, slam: 0, luff: 0, trail: [], trailClock: 0, score: 0,
+                target: { x: 0, y: 0 }, boom: 0, heel: 0, eased: 0, roll: 0, heave: 0, lift: 0, pitch: 0, slam: 0, luff: 0, trail: [], trailClock: 0, score: 0,
             };
             boat.target = this.newTarget(boat, (i + 0.5) / count);
             this.boats.push(boat);
@@ -182,8 +199,28 @@ export class RegattaSim {
     }
 
     /** Wind speed (px/s) at distance d from the pointer: strong near it, fading with distance, zero right at it. */
+    /**
+     * Wind speed (px/s) at distance d from the pointer. The wind setting scales it; a lighter wind
+     * also falls off more gently (it reaches further), and a light breeze carries to the edges.
+     */
     speedAt(d: number) {
-        return this.sourceStrength * sourceProfile(d);
+        const scale = this.windScale, stretch = this.stretch();
+        const floor = FLOOR * WIND_KNOT * Math.min(1, scale + 0.4) * (d / (d + EYE));
+        return this.sourceStrength * (scale * sourceProfile(d / stretch) + floor);
+    }
+
+    /** How much further a lighter wind reaches. */
+    private stretch() {
+        return 1 + Math.max(0, 1 - this.windScale) * 1.2;
+    }
+
+    /** Strongest wind (knots) at the current setting. */
+    peakKnots() {
+        const strength = this.sourceStrength;
+        this.sourceStrength = 1;
+        const knots = this.speedAt(PEAK * this.stretch()) / WIND_KNOT;
+        this.sourceStrength = strength;
+        return knots;
     }
 
     windAt(x: number, y: number) {
@@ -200,8 +237,8 @@ export class RegattaSim {
      */
     isotach(knots: number) {
         const speed = knots * WIND_KNOT;
-        let lo = PEAK, hi = 6000;
-        if (this.speedAt(lo) < speed) return null;
+        let lo = PEAK * this.stretch(), hi = 6000;
+        if (this.speedAt(lo) < speed || this.speedAt(hi) >= speed) return null;
         for (let k = 0; k < 40; k++) {
             const mid = (lo + hi) / 2;
             if (this.speedAt(mid) > speed) lo = mid; else hi = mid;
@@ -307,8 +344,8 @@ export class RegattaSim {
 
         // Speed from the polar diagram, with inertia (boats carry way through a tack).
         const angle = angleDiff(b.heading, from);
-        // An overpowered boat, heeled far over, sails slower.
-        const target = polar(angle, knots) * BOAT_KNOT * (1 - 0.25 * Math.max(0, b.heel - 0.65));
+        // An overpowered boat, heeled far over, sails slower; knocked flat it hardly moves at all.
+        const target = polar(angle, knots) * BOAT_KNOT * (1 - 0.85 * Math.max(0, b.heel - 0.35) / 0.65) * (1 - 0.4 * b.eased);
         b.speed += (target - b.speed) * (1 - Math.exp(-dt / (target > b.speed ? 1.2 : 1.8)));
 
         // Apparent wind = true wind minus the boat's own motion; the sails are trimmed to it:
@@ -318,16 +355,21 @@ export class RegattaSim {
         const apparentStrength = Math.hypot(ax, ay);
         const leeward = Math.sign(apparent) || 1; // wind over the port side: the sails go to starboard
         const trim = clamp((Math.abs(apparent) - 0.3) * 0.55, 0.06, 1.4);
-        b.luff = clamp(1 - (Math.abs(apparent) - 0.35) / 0.3, 0, 1) * clamp(apparentStrength / 30, 0, 1);
+        b.luff = clamp(1 - (Math.abs(apparent) - 0.25) / 0.15, 0, 1) * clamp(apparentStrength / 30, 0, 1); // flapping below ~20°
         const flap = b.luff * Math.sin(this.time * 22 + b.x) * 0.35;
         b.boom += (leeward * trim + flap - b.boom) * (1 - Math.exp(-dt / 0.3));
         // Heel: the sails' force grows with the square of the apparent wind, and the closer to the wind,
         // the more of it pushes sideways (sheeted in hard) rather than forwards. So a boat heels most
         // close-hauled, less on a reach and hardly at all running before the wind; the keel resists
-        // more the further it leans, so the heel levels off.
-        const force = heelingForce(apparent) * (apparentStrength / 110) ** 2 * (1 - b.luff);
-        const heel = 1 - Math.exp(-force);
-        b.heel += (heel - b.heel) * (1 - Math.exp(-dt / 0.6));
+        // more the further it leans: the boat settles where both balance, sin(heel) = heeling / righting.
+        // About 10° at 4 Bft, 50° at 6 Bft, and from about 7 Bft an unreefed boat is knocked flat.
+        const heeling = heelingForce(apparent) * (apparentStrength / KNOCKDOWN) ** 2 * (1 - b.luff) * (1 - 0.6 * b.eased);
+        const heel = Math.asin(Math.min(1, heeling)) / (Math.PI / 2);
+        b.heel += (heel - b.heel) * (1 - Math.exp(-dt / 0.5));
+        // A gust lays the boat over at once; then the crew eases the sheets and it comes back up a
+        // little, sailing on slower. Once the wind drops they trim in again.
+        const ease = b.heel > 0.8 ? 1 : b.heel < 0.4 ? 0 : b.eased;
+        b.eased += (ease - b.eased) * (1 - Math.exp(-dt / (ease > b.eased ? 2 : 3)));
 
         // Move, with a little leeway (drift with the wind); keep inside the section.
         b.x = clamp(b.x + (Math.cos(b.heading) * b.speed + w.x * 0.04) * dt, 8, this.width - 8);
@@ -345,4 +387,11 @@ export class RegattaSim {
             b.target = this.newTarget(b);
         }
     }
+}
+
+/** Beaufort force at the pointer for a wind setting (for the slider's label). */
+export function peakBeaufort(windScale: number) {
+    const sim = new RegattaSim(100, 100, 0);
+    sim.windScale = windScale;
+    return beaufort(sim.peakKnots());
 }

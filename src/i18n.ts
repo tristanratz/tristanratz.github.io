@@ -57,9 +57,10 @@ const en = {
     experience: {
         eyebrow: "Experience", title: ["The path ", "so far"],
         regatta: {
-            disable: "Disable regatta", enable: "Enable regatta",
+            show: "Show", views: { both: "Both", timeline: "Timeline", regatta: "Regatta" },
             hint: "Sailboats race for their buoys; your cursor is the wind.",
-            scores: "Buoys reached",
+            scores: "Buoys reached", scoreTitle: "Score",
+            wind: "Wind", windHint: "How hard your cursor blows (Beaufort force at the cursor)",
             colors: ["Blue", "Green", "Orange", "Rose", "Violet"],
             boat: (color: string, score: number) => `${color}: ${score} ${score === 1 ? "buoy" : "buoys"}`,
         },
@@ -172,9 +173,10 @@ const de: Strings = {
     experience: {
         eyebrow: "Werdegang", title: ["Der bisherige ", "Weg"],
         regatta: {
-            disable: "Regatta ausschalten", enable: "Regatta einschalten",
+            show: "Anzeigen", views: { both: "Beides", timeline: "Zeitleiste", regatta: "Regatta" },
             hint: "Segelboote fahren um ihre Bojen; dein Cursor ist der Wind.",
-            scores: "Erreichte Bojen",
+            scores: "Erreichte Bojen", scoreTitle: "Punkte",
+            wind: "Wind", windHint: "Wie stark dein Cursor bläst (Windstärke in Beaufort am Cursor)",
             colors: ["Blau", "Grün", "Orange", "Rosé", "Violett"],
             boat: (color: string, score: number) => `${color}: ${score} ${score === 1 ? "Boje" : "Bojen"}`,
         },

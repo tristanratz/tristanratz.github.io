@@ -1,12 +1,24 @@
 import { useEffect, useRef, useState } from "react";
-import { IoBoatOutline } from "react-icons/io5";
+import { IoBoatOutline, IoTrophyOutline } from "react-icons/io5";
 import { useReveal } from "../../hooks/useReveal";
 import { useUi } from "../../i18n";
 import { useRoute } from "../../router";
 import { experienceId, getPerson, Person } from "../../store/person";
 import { prefersReducedMotion } from "../../env";
 import { Regatta, REGATTA_FADE } from "./Regatta";
-import { BOAT_COLORS } from "./regattaPhysics";
+import { BOAT_COLORS, peakBeaufort, WIND_SCALE } from "./regattaPhysics";
+
+type RegattaView = "both" | "timeline" | "regatta";
+
+/** A boat from above in its colour, for the scoreboard: the colours on the water are the boats. */
+const BoatIcon = ({ color }: { color: string }) => (
+    <svg className="boatIcon" viewBox="-16 -9 36 18" aria-hidden="true">
+        <path d="M18 0C15 -4.2 8 -6.8 -2 -7.2L-14.5 -6.4Q-15.4 0 -14.5 6.4L-2 7.2C8 6.8 15 4.2 18 0Z" fill={color} />
+        <path d="M18 0C15 -4.2 8 -6.8 -2 -7.2L-14.5 -6.4Q-15.4 0 -14.5 6.4L-2 7.2C8 6.8 15 4.2 18 0Z" fill="#fff" transform="scale(0.8 0.62)" />
+        <path d="M5 0Q-3 4.5 -13 5L5 0Z" fill={color} fillOpacity={0.35} stroke={color} strokeWidth={0.8} />
+    </svg>
+);
+const VIEWS: RegattaView[] = ["both", "timeline", "regatta"];
 import "./style.scss";
 
 type Step = Person["path"][number];
@@ -60,51 +72,80 @@ export function Experience() {
     }, []);
 
     const sectionRef = useRef<HTMLElement>(null);
-    // The sailboats can be switched off; remembered per visitor (read after mount, the pre-rendered page has them on).
-    const [boats, setBoats] = useState(true);
+    // What the section shows: timeline and regatta together, only the timeline, or only the regatta
+    // (the timeline steps aside so the whole sea is free). Remembered per visitor; read after mount,
+    // the pre-rendered page shows both.
+    const [view, setView] = useState<RegattaView>("both");
+    const [boats, setBoats] = useState(true); // the regatta is mounted
     const [scores, setScores] = useState<number[]>([0, 0, 0, 0, 0]);
+    // How hard the pointer blows; remembered per visitor.
+    const [wind, setWind] = useState(1);
     useEffect(() => {
-        try { if (localStorage.getItem("sailboats") === "off") setBoats(false); } catch { /* storage unavailable */ }
+        try {
+            const saved = Number(localStorage.getItem("regattaWind"));
+            if (saved >= WIND_SCALE.min && saved <= WIND_SCALE.max) setWind(saved);
+            const stored = localStorage.getItem("regattaView") ?? (localStorage.getItem("sailboats") === "off" ? "timeline" : null);
+            if (stored === "timeline" || stored === "regatta") {
+                setView(stored);
+                if (stored === "timeline") setBoats(false);
+            }
+        } catch { /* storage unavailable */ }
     }, []);
-    // Switching off fades the regatta out first and only then takes it away; clicking again while
-    // it fades brings it back.
+    const changeWind = (value: number) => {
+        setWind(value);
+        try { localStorage.setItem("regattaWind", String(value)); } catch { /* storage unavailable */ }
+    };
+    // Leaving the regatta fades it out first and only then takes it away; coming back in the
+    // meantime keeps it.
     const [leaving, setLeaving] = useState(false);
     const fadeTimer = useRef(0);
-    const remember = (on: boolean) => {
-        try { localStorage.setItem("sailboats", on ? "on" : "off"); } catch { /* storage unavailable */ }
-    };
-    const toggleBoats = () => {
+    const choose = (next: RegattaView) => {
+        setView(next);
+        try { localStorage.setItem("regattaView", next); } catch { /* storage unavailable */ }
         window.clearTimeout(fadeTimer.current);
-        if (leaving) {
+        if (next !== "timeline") {
             setLeaving(false);
-            remember(true);
+            setBoats(true);
         } else if (boats) {
-            remember(false);
             if (prefersReducedMotion()) return setBoats(false);
             setLeaving(true);
             fadeTimer.current = window.setTimeout(() => { setBoats(false); setLeaving(false); }, REGATTA_FADE);
-        } else {
-            setBoats(true);
-            remember(true);
         }
     };
-    const on = boats && !leaving;
+    const on = view !== "timeline";
     let index = 0;
     return (
-        <section className="section experience" id="experience" ref={sectionRef}>
-            {boats && <Regatta section={sectionRef} onScore={setScores} leaving={leaving} />}
-            <div className={"regattaPanel" + (on ? "" : " off")}>
-                <button onClick={toggleBoats} aria-pressed={on} title={ui.regatta.hint}>
-                    <IoBoatOutline /> {on ? ui.regatta.disable : ui.regatta.enable}
-                </button>
+        <section className={"section experience" + (view === "regatta" ? " regattaOnly" : "")} id="experience" ref={sectionRef}>
+            {boats && <Regatta section={sectionRef} onScore={setScores} leaving={leaving} wind={wind} focus={view === "regatta"} />}
+            {/* Sticky: switch and board stay in view while scrolling through the section. */}
+            <div className="regattaPanel">
+                <div className="regattaViews" role="group" aria-label={ui.regatta.show} title={ui.regatta.hint}>
+                    {VIEWS.map((v) => (
+                        <button key={v} aria-pressed={view === v} onClick={() => choose(v)}>
+                            {v === "regatta" && <IoBoatOutline />}{ui.regatta.views[v]}
+                        </button>
+                    ))}
+                </div>
+                {/* Scoreboard and wind only with the regatta alone; it slides in and out. */}
                 {on && (
-                    <ol className="scores" aria-label={ui.regatta.scores}>
-                        {scores.map((score, i) => ({ score, i })).sort((a, b) => b.score - a.score || a.i - b.i).map(({ score, i }) => (
-                            <li key={i} title={ui.regatta.boat(ui.regatta.colors[i], score)}>
-                                <span className="dot" style={{ background: BOAT_COLORS[i] }} />{score}
-                            </li>
-                        ))}
-                    </ol>
+                    <div className={"regattaBoard" + (view === "regatta" ? " shown" : "")} aria-hidden={view !== "regatta"}>
+                        <p className="scoreTitle"><IoTrophyOutline /> {ui.regatta.scoreTitle}</p>
+                        <ol className="scores" aria-label={ui.regatta.scores}>
+                            {scores.map((score, i) => ({ score, i })).sort((a, b) => b.score - a.score || a.i - b.i).map(({ score, i }) => (
+                                <li key={i} title={ui.regatta.boat(ui.regatta.colors[i], score)}>
+                                    <BoatIcon color={BOAT_COLORS[i]} />
+                                    <span className="name">{ui.regatta.colors[i]}</span>
+                                    <span className="score">{score}</span>
+                                </li>
+                            ))}
+                        </ol>
+                        <label className="windControl" title={ui.regatta.windHint}>
+                            <span>{ui.regatta.wind}</span>
+                            <input type="range" min={WIND_SCALE.min} max={WIND_SCALE.max} step={0.05} value={wind}
+                                   onChange={(e) => changeWind(Number(e.target.value))} aria-valuetext={`${peakBeaufort(wind)} Bft`} />
+                            <output>{peakBeaufort(wind)} Bft</output>
+                        </label>
+                    </div>
                 )}
             </div>
             <div className="container">

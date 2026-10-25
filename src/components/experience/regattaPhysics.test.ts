@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { angleDiff, BOAT_KNOT, bestHeading, heelingForce, polar, RegattaSim, WIND_KNOT } from "./regattaPhysics";
+import { angleDiff, beaufort, BOAT_KNOT, bestHeading, heelingForce, polar, RegattaSim, WIND_KNOT } from "./regattaPhysics";
 
 const seeded = () => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; };
 const DEG = Math.PI / 180;
@@ -153,7 +153,7 @@ describe("regatta", () => {
         sim.source = sim.origin = { x: 0, y: 0 };
         sim.sourceStrength = 1;
         let previous = 0;
-        for (const knots of [16, 12, 8, 4, 2]) {
+        for (const knots of [16, 12, 8, 4]) {
             const r = sim.isotach(knots)!;
             expect(r).toBeGreaterThan(previous); // weaker wind further out
             const w = sim.windAt(r, 0);
@@ -231,5 +231,45 @@ describe("regatta", () => {
             }
         });
         expect(close / samples).toBeLessThan(0.03);
+    });
+
+    it("heels a little at 4 Bft, is knocked flat by an 8 Bft gust and eases the sheets to come back up", () => {
+        const heelAt = (knots: number, seconds: number) => {
+            const sim = new RegattaSim(3000, 3000, 1, seeded());
+            sim.source = { x: 1500, y: 1500 };
+            sim.sourceStrength = 1;
+            // Find the distance where the wind blows this hard, then sail close-hauled there.
+            const d = sim.isotach(knots)!;
+            const boat = sim.boats[0];
+            Object.assign(boat, { speed: 30, heel: 0, eased: 0 });
+            const heading = Math.PI + 48 * DEG;
+            run(sim, seconds, () => {
+                Object.assign(boat, { x: 1500 + d, y: 1500, heading });
+                boat.target = { x: boat.x + Math.cos(heading) * 500, y: boat.y + Math.sin(heading) * 500 };
+            });
+            return boat.heel;
+        };
+        expect(heelAt(11, 4)).toBeLessThan(0.25);       // 4 Bft: some 10-20°
+        expect(heelAt(34, 1.6)).toBeGreaterThan(0.85);  // 8 Bft: laid flat at first
+        expect(heelAt(34, 8)).toBeLessThan(heelAt(34, 1.6)); // then eased up a little
+    });
+
+    it("lets the wind be set, falling off more gently when it's light, with a breeze to the edges", () => {
+        const sim = new RegattaSim(800, 600, 1, seeded());
+        sim.source = sim.origin = { x: 0, y: 0 };
+        sim.sourceStrength = 1;
+        const at = (d: number) => sim.speedAt(d) / WIND_KNOT;
+        const strong = at(200);
+        sim.windScale = 0.4;
+        expect(at(200)).toBeLessThan(strong);
+        // Relative to its own strength near the pointer, light wind carries further.
+        const light = at(800) / at(150);
+        sim.windScale = 1;
+        expect(light).toBeGreaterThan(at(800) / at(150));
+        // A breeze even far away.
+        expect(at(3000)).toBeGreaterThan(2);
+        expect(beaufort(sim.peakKnots())).toBe(8);
+        sim.windScale = 0.4;
+        expect(beaufort(sim.peakKnots())).toBeLessThan(6);
     });
 });
