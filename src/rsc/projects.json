@@ -1,7 +1,52 @@
 [
   {
+    "name": "Semantic Search on this Site (PoC)",
+    "technologies": [
+      "Embeddings",
+      "Model2Vec",
+      "PCA",
+      "Quantisation",
+      "Hybrid Search",
+      "BM25",
+      "TypeScript"
+    ],
+    "description": "A proof of concept: multilingual semantic search that runs entirely in your browser, with a static embedding model shrunk from 512 MB to 5 MB, and an honest look at what it adds.",
+    "text": [
+      "By default, the search box on this site ranks results with BM25, the classic keyword algorithm behind search engines like Elasticsearch. It is fast and tiny, but it only matches words, not meaning, and German questions found nothing because the site is written in English.",
+      "This proof of concept adds semantic search with potion-multilingual-128M, a Model2Vec model by Minish Lab distilled from bge-m3. Instead of running a transformer, it is a static table with one vector per token. Embedding a text means splitting it into tokens with a Unigram tokenizer (the most probable split, found with the Viterbi algorithm), looking up their vectors and averaging them. Tokenizer and model are about 150 lines of TypeScript without any ML library, and everything runs in your browser. No server is involved and no query leaves the page.",
+      "The original table has 500,353 tokens with 256 dimensions each: 512 MB. A build script keeps the 41,605 most probable tokens in Latin script, which covers German, English and other European languages, reduces the vectors to 128 dimensions with PCA and stores them as 8-bit integers. That leaves about 5 MB.",
+      "Every entry the search knows about is embedded once, with title, answer and a short list of English and German keywords as separate vectors. Common words such as \"what\", \"is\" or \"wo\" are removed first, because averaging would let them drown out the words that matter. A query is compared to all entries by cosine similarity, matches below 0.47 are dropped so that nonsense finds nothing, and the rest is fused with the BM25 ranking through weighted reciprocal rank fusion.",
+      "The honest result: on 24 test questions (12 English, 12 German) and 8 nonsense queries, the shrunk model alone found the right answer for 16 questions, with nonsense often scoring as high as real matches. Combined with BM25 it answers 18 of 24 without false hits, exactly as many as the keyword search once it had German keywords. Static embeddings average words and cannot really understand questions, so most of the gain came from the bilingual keywords. Real semantic understanding would need a transformer such as multilingual-e5-small, which also runs in the browser but weighs about 118 MB. That's why this stays a proof of concept, only active through the link below."
+    ],
+    "language": "en",
+    "image": "/img/semantic-search.svg",
+    "date": "2026",
+    "github": "https://github.com/tristanratz/tristanratz.github.io",
+    "link": "/?search=semantic",
+    "keywords": [
+      "semantische Suche",
+      "Einbettungen",
+      "Vektorsuche",
+      "Browser"
+    ],
+    "slug": "semantic-search-poc",
+    "de": {
+      "description": "Ein Proof of Concept: mehrsprachige semantische Suche, die komplett in deinem Browser läuft, mit einem statischen Embedding-Modell, das von 512 MB auf 5 MB geschrumpft wurde, und ein ehrlicher Blick darauf, was sie bringt.",
+      "text": [
+        "Standardmäßig sortiert die Suche auf dieser Seite Treffer mit BM25, dem klassischen Keyword-Algorithmus hinter Suchmaschinen wie Elasticsearch. Er ist schnell und winzig, vergleicht aber nur Wörter, nicht Bedeutung, und deutsche Fragen fanden nichts, weil die Seite auf Englisch geschrieben ist.",
+        "Dieser Proof of Concept ergänzt eine semantische Suche mit potion-multilingual-128M, einem Model2Vec-Modell von Minish Lab, das aus bge-m3 destilliert wurde. Statt eines Transformers ist es eine statische Tabelle mit einem Vektor pro Token. Um einen Text einzubetten, wird er mit einem Unigram-Tokenizer zerlegt (die wahrscheinlichste Zerlegung, gefunden mit dem Viterbi-Algorithmus), die Vektoren werden nachgeschlagen und gemittelt. Tokenizer und Modell sind etwa 150 Zeilen TypeScript ohne ML-Bibliothek, und alles läuft in deinem Browser. Kein Server ist beteiligt, und keine Anfrage verlässt die Seite.",
+        "Die ursprüngliche Tabelle hat 500.353 Tokens mit je 256 Dimensionen: 512 MB. Ein Build-Skript behält die 41.605 wahrscheinlichsten Tokens in lateinischer Schrift, was Deutsch, Englisch und andere europäische Sprachen abdeckt, reduziert die Vektoren per PCA auf 128 Dimensionen und speichert sie als 8-Bit-Ganzzahlen. Übrig bleiben etwa 5 MB.",
+        "Jeder Eintrag, den die Suche kennt, wird einmal eingebettet, mit Titel, Antwort und einer kurzen Liste englischer und deutscher Stichwörter als getrennten Vektoren. Häufige Wörter wie „what“, „is“ oder „wo“ werden vorher entfernt, weil sie beim Mitteln die wichtigen Wörter übertönen würden. Eine Anfrage wird per Kosinus-Ähnlichkeit mit allen Einträgen verglichen, Treffer unter 0,47 fallen weg, damit Unsinn nichts findet, und der Rest wird per gewichteter Reciprocal Rank Fusion mit der BM25-Rangfolge kombiniert.",
+        "Das ehrliche Ergebnis: Bei 24 Testfragen (12 englisch, 12 deutsch) und 8 Unsinnsanfragen fand das geschrumpfte Modell allein für 16 Fragen die richtige Antwort, und Unsinn erreichte oft ähnliche Werte wie echte Treffer. Zusammen mit BM25 beantwortet es 18 von 24 ohne Fehltreffer, genau so viele wie die Keyword-Suche, sobald sie deutsche Stichwörter hatte. Statische Embeddings mitteln Wörter und verstehen Fragen nicht wirklich, der größte Gewinn kam also von den zweisprachigen Stichwörtern. Echtes semantisches Verständnis bräuchte einen Transformer wie multilingual-e5-small, der ebenfalls im Browser läuft, aber etwa 118 MB groß ist. Deshalb bleibt das ein Proof of Concept, nur aktiv über den Link unten."
+      ]
+    }
+  },
+  {
     "name": "Paper: On the Role of Summary Content Units in Text Summarization Evaluation",
-    "technologies": ["NAACL Main Conference 2024", "NLP"],
+    "technologies": [
+      "NAACL Main Conference 2024",
+      "NLP"
+    ],
     "description": "We conducted research on the role of summary content units in text summarization evaluation. The paper was accepted at the NAACL Main Conference 2024. The code is available on Github.",
     "text": [
       "At the heart of the Pyramid evaluation method for text summarization lie human written summary content units (SCUs). These SCUs are concise sentences that decompose a summary into small facts. Such SCUs can be used to judge the quality of a candidate summary, possibly partially automated via natural language inference (NLI) systems.",
@@ -9,27 +54,69 @@
       "In this work, we examine two novel strategies to approximate SCUs: generating SCU approximations from AMR meaning representations (SMUs) and from large language models (SGUs), respectively. We find that while STUs and SMUs are competitive, the best approximation quality is achieved by SGUs. We also show through a simple sentence-decomposition baseline (SSUs) that SCUs (and their approximations) offer the most value when ranking short summaries, but may not help as much when ranking systems or longer summaries."
     ],
     "language": "en",
-    "image": "./img/scu.jpg",
+    "image": "/img/scu.jpg",
     "date": "2024",
     "github": "https://github.com/tristanratz/SCU-text-evaluation",
-    "link": "https://arxiv.org/abs/2404.01701"
+    "link": "https://arxiv.org/abs/2404.01701",
+    "keywords": [
+      "Veröffentlichung",
+      "Forschung",
+      "Konferenz",
+      "Zusammenfassungen bewerten"
+    ],
+    "slug": "naacl-2024-summary-content-units",
+    "de": {
+      "description": "Wir haben untersucht, welche Rolle Summary Content Units bei der Bewertung automatischer Textzusammenfassungen spielen. Das Paper wurde auf der NAACL Main Conference 2024 angenommen. Der Code ist auf GitHub verfügbar.",
+      "text": [
+        "Im Kern der Pyramid-Methode zur Bewertung von Textzusammenfassungen stehen von Menschen geschriebene Summary Content Units (SCUs). Diese SCUs sind knappe Sätze, die eine Zusammenfassung in kleine Fakten zerlegen. Mit ihnen lässt sich die Qualität einer Kandidaten-Zusammenfassung beurteilen, teilweise automatisiert über Natural-Language-Inference-Systeme (NLI).",
+        "Mit dem Ziel, die Pyramid-Bewertung vollständig zu automatisieren, zeigen Zhang und Bansal (2021), dass sich SCUs durch automatisch erzeugte semantische Rollen-Tripel (STUs) annähern lassen. Einige Fragen sind jedoch offen, insbesondere: i) Gibt es andere Wege, SCUs anzunähern, die Vorteile bieten? ii) Unter welchen Bedingungen bringen SCUs (oder ihre Annäherungen) den größten Nutzen?",
+        "In dieser Arbeit untersuchen wir zwei neue Strategien, SCUs anzunähern: aus AMR-Bedeutungsrepräsentationen (SMUs) und aus großen Sprachmodellen (SGUs). Wir stellen fest, dass STUs und SMUs konkurrenzfähig sind, die beste Annäherung aber mit SGUs gelingt. Über eine einfache Satzzerlegung als Baseline (SSUs) zeigen wir außerdem, dass SCUs (und ihre Annäherungen) vor allem beim Ranking kurzer Zusammenfassungen helfen, beim Ranking von Systemen oder längeren Zusammenfassungen aber weniger."
+      ]
+    }
   },
   {
     "name": "ITRF: Instruction-Tuned Reranker Fine-Tuning",
-    "technologies": ["LLM", "Llama", "NLP", "RAG", "Python"],
+    "technologies": [
+      "LLM",
+      "Llama",
+      "NLP",
+      "RAG",
+      "Python"
+    ],
     "description": "During my Thesis I researched ways on how to effectively train rerankers to score better results in retrievel augmented generation (RAG) applications.",
     "text": [
       "Large Language Models (LLMs) have emerged as one of the most profound shifts in Natural Language Processing (NLP). While generally applicable they have their shortcomings: Generate content is often hallucinated, there is a lack of provenance and its knowledge is costly to update. Retrieval Augmented Generation (RAG) aims to relieve these issues by providing the LLM with relevant information.",
       "In this work we establish a retrieval corpus, build a RAG pipeline, fine-tune a language model on task specific data in a parameter efficient way to extract knowledge from provided contexts and subsequently train a reranker to predict the probability a document is going to help the LLM generate the right answer on 25 datasets. We establish five distinct pipelines which we evaluate on faithfulness, answer relevancy, answer semantic similarity, context recall and context relevancy. We find that a out of the box pre-trained reranker in combination with our fine-tuned model works best on a range of scores, with a third-party LLM with our reranker provides the answer most closely to the ground truth. The code and models are available open source."
     ],
     "language": "en",
-    "image": "./img/thesis.jpg",
+    "image": "/img/thesis.jpg",
     "date": "2024",
-    "github": "https://github.com/tristanratz/ITRF"
+    "github": "https://github.com/tristanratz/ITRF",
+    "keywords": [
+      "Masterarbeit",
+      "Abschlussarbeit",
+      "Sprachmodelle",
+      "Suche"
+    ],
+    "slug": "itrf-reranker-fine-tuning",
+    "de": {
+      "description": "In meiner Masterarbeit habe ich untersucht, wie man Reranker effektiv trainiert, damit Retrieval-Augmented-Generation-Anwendungen (RAG) bessere Ergebnisse liefern.",
+      "text": [
+        "Große Sprachmodelle (LLMs) gehören zu den tiefgreifendsten Umbrüchen im Natural Language Processing (NLP). So vielseitig sie sind, haben sie Schwächen: Erzeugte Inhalte sind oft halluziniert, Quellen fehlen, und ihr Wissen zu aktualisieren ist teuer. Retrieval Augmented Generation (RAG) soll diese Probleme lindern, indem das LLM relevante Informationen bekommt.",
+        "In dieser Arbeit bauen wir einen Retrieval-Korpus und eine RAG-Pipeline auf, passen ein Sprachmodell parametereffizient an aufgabenspezifische Daten an, damit es Wissen aus bereitgestellten Kontexten extrahiert, und trainieren anschließend einen Reranker, der vorhersagt, mit welcher Wahrscheinlichkeit ein Dokument dem LLM zur richtigen Antwort verhilft, auf 25 Datensätzen. Wir vergleichen fünf Pipelines anhand von Faithfulness, Answer Relevancy, semantischer Antwortähnlichkeit, Context Recall und Context Relevancy. Ein vortrainierter Reranker ohne Anpassung funktioniert mit unserem feinabgestimmten Modell über viele Metriken am besten, während ein Drittanbieter-LLM mit unserem Reranker der Musterlösung am nächsten kommt. Code und Modelle sind Open Source verfügbar."
+      ]
+    }
   },
   {
     "name": "diverSATy",
-    "technologies": [""],
+    "technologies": [
+      "Satellite Data",
+      "Remote Sensing",
+      "Geospatial Analysis",
+      "Climate Adaptation",
+      "Green Roofs",
+      "Business Development"
+    ],
     "description": "As it turns out... Climate Change is real. It's been there for years. Daily in the news. But its slowly coming to us. To our cities and homes.",
     "text": [
       "The lack of green in cities leads to bad water drainage and heat islands. These cause climate related damages which are enormous; In dutch cities alone between 2020-2040 an estimated €33-€87 Billions!",
@@ -38,13 +125,38 @@
       "Read what the dutch space organisation (NSO) wrote about us down below."
     ],
     "language": "en",
-    "image": "./img/green_roofs.jpg",
+    "image": "/img/green_roofs.jpg",
     "date": "2022",
-    "link": "https://www.spaceoffice.nl/nl/nieuws/588/studenten-tu-e-ontwikkelen-prototype-ruimtevaarttoepassing.html"
+    "link": "https://www.spaceoffice.nl/nl/nieuws/588/studenten-tu-e-ontwikkelen-prototype-ruimtevaarttoepassing.html",
+    "keywords": [
+      "Klima",
+      "Klimawandel",
+      "Dachbegrünung",
+      "Satellit",
+      "Stadt"
+    ],
+    "slug": "diversaty",
+    "de": {
+      "description": "Wie sich zeigt: Der Klimawandel ist real. Es gibt ihn seit Jahren, täglich in den Nachrichten. Aber langsam kommt er bei uns an, in unseren Städten und Häusern.",
+      "text": [
+        "Fehlendes Grün in Städten führt zu schlechtem Wasserabfluss und Hitzeinseln. Die dadurch verursachten Klimaschäden sind enorm: Allein in niederländischen Städten werden sie für 2020 bis 2040 auf 33 bis 87 Milliarden Euro geschätzt.",
+        "In Städten gibt es immer weniger Platz, aber einen perfekten Ort, um das Grün zurückzubringen: unsere Dächer.",
+        "Wir haben einen Dienst entwickelt, der die gefährdetsten und am besten geeigneten Stellen für Gründächer findet. Mit wenigen Klicks helfen wir Dachbegrünern, mehr Dächer zu verkaufen, Versicherungen, Risiken zu senken, Kommunen, Förderungen zu überwachen, und Wohnungsbaugesellschaften, für ihre Gebäude und Bewohner am meisten zu bewirken.",
+        "Was die niederländische Raumfahrtagentur (NSO) über uns geschrieben hat, steht im Link unten."
+      ]
+    }
   },
   {
     "name": "Yacht.Chat: Your Virtual Office",
-    "technologies": ["React", "WebRTC", "JavaScript", "CSS", "Java", "WebSockets", "Collaboration"],
+    "technologies": [
+      "React",
+      "WebRTC",
+      "JavaScript",
+      "CSS",
+      "Java",
+      "WebSockets",
+      "Collaboration"
+    ],
     "description": "Over the course of the last year we saw the problem, that teams working remotly tend to lose their sense of team spirit. Therefore, we wanted to provide a solution.",
     "text": [
       "We present Yacht.Chat to you. Yacht.Chat is a digital communication platform that enables real-time collaboration for remotely working teams. ",
@@ -53,104 +165,296 @@
       "Try it out for free with the link below."
     ],
     "language": "en",
-    "image": "./img/yachtchat.png",
+    "image": "/img/yachtchat.jpg",
     "date": "2021",
-    "link": "https://www.yacht.chat"
+    "link": "https://yacht-chat.com",
+    "keywords": [
+      "Homeoffice",
+      "Zusammenarbeit",
+      "virtuelles Büro",
+      "Videochat",
+      "Startup"
+    ],
+    "slug": "yacht-chat",
+    "de": {
+      "description": "Im vergangenen Jahr haben wir gesehen, dass Teams im Homeoffice ihren Teamgeist verlieren. Dafür wollten wir eine Lösung schaffen.",
+      "text": [
+        "Wir stellen dir Yacht.Chat vor: eine digitale Kommunikationsplattform für Zusammenarbeit in Echtzeit, gemacht für verteilt arbeitende Teams.",
+        "Anders als bestehende Kommunikationslösungen lässt Yacht.Chat jedes Teammitglied frei durch einen virtuellen Raum laufen und seinen Sprechradius anpassen. So entstehen Gespräche spontan und passen sich der Dynamik im Team an.",
+        "Yacht.Chat fördert den Informationsaustausch und lässt Teammitglieder sich wieder wie ein Team fühlen. Es verbindet die Zusammenarbeit im Büro mit den Vorteilen des Homeoffice.",
+        "Probier es kostenlos über den Link unten aus."
+      ]
+    }
   },
   {
     "name": "Interactive Image Segmentation",
-    "technologies": ["Python", "Tensorflow", "Label Studio", "Computer Vision", "Image Segmentation", "Machine Learning", "Bachelor Thesis"],
+    "technologies": [
+      "Python",
+      "Tensorflow",
+      "Label Studio",
+      "Computer Vision",
+      "Image Segmentation",
+      "Machine Learning",
+      "Bachelor Thesis"
+    ],
     "description": "In 2021 I wrote a machine learning tool, that provided the user with image segmentation proposals to accelerate the labeling process. The tool was subject of my bachelor thesis.",
-    "text": ["High quality annotated data has become an increasingly important factor for successful data science and deep learning projects. However, a major issue is that the creation, preprocessing, and labeling of training data can get very expensive, hence a research field called interactive labeling has been built around that topic.",
+    "text": [
+      "High quality annotated data has become an increasingly important factor for successful data science and deep learning projects. However, a major issue is that the creation, preprocessing, and labeling of training data can get very expensive, hence a research field called interactive labeling has been built around that topic.",
       "Interactive labeling aims at facilitating the labeling process considerably and at making machine learning accessible for people unfamiliar with the matter. While much research has already been conducted in this field, not much of that work has been published open-source. In my bachelor thesis, I present an open-source software extension to Label Studio, an open-source multi-domain labeling tool. This extension will enable Label Studio with interactive learning capabilities in order to make labeling more feasible, less cost-intensive, and deep learning more accessible.",
       "The user first has to label a small set of images manually and is then provided with labeling predictions, which the user can refine or reject. With increasing amount of labeled images the accuracy should rise, and the user will be able to obtain a working machine learning model that successfully pre-labels the data.",
       "In my tests with the extension added to Label Studio, I was able to achieve an acceleration of labeling time up to 142.1% on average over manual labeling with a precision of 99.3% and a recall of 65.9%.",
       "In summary, I successfully developed an open-source, instance segmentation, interactive labeling extension for Label Studio that decreases labeling time and provides the user with a working Mask R-CNN model.",
-      "The source code is available on GitHub."],
+      "The source code is available on GitHub."
+    ],
     "language": "en",
-    "image": "./img/imagesegmentation.jpg",
+    "image": "/img/imagesegmentation.jpg",
     "date": "2021",
-    "github": "https://github.com/tristanratz/Interactive-Image-Segmentation"
+    "github": "https://github.com/tristanratz/Interactive-Image-Segmentation",
+    "keywords": [
+      "Bachelorarbeit",
+      "Bilder beschriften",
+      "Annotation",
+      "Bilderkennung"
+    ],
+    "slug": "interactive-image-segmentation",
+    "de": {
+      "description": "2021 habe ich ein Machine-Learning-Werkzeug geschrieben, das Vorschläge zur Bildsegmentierung macht und so das Annotieren beschleunigt. Es war Thema meiner Bachelorarbeit.",
+      "text": [
+        "Hochwertig annotierte Daten werden für Data-Science- und Deep-Learning-Projekte immer wichtiger. Das Erstellen, Aufbereiten und Annotieren von Trainingsdaten kann aber sehr teuer werden, deshalb ist darum ein eigenes Forschungsfeld entstanden: interaktives Labeling.",
+        "Interaktives Labeling soll das Annotieren deutlich erleichtern und Machine Learning auch für Menschen ohne Vorkenntnisse zugänglich machen. Obwohl es in diesem Feld schon viel Forschung gibt, wurde wenig davon als Open Source veröffentlicht. In meiner Bachelorarbeit stelle ich eine Open-Source-Erweiterung für Label Studio vor, ein Open-Source-Annotationswerkzeug für viele Datentypen. Die Erweiterung gibt Label Studio interaktive Lernfähigkeiten, damit Annotieren machbarer und günstiger und Deep Learning zugänglicher wird.",
+        "Zuerst annotiert man eine kleine Menge Bilder von Hand und bekommt dann Vorschläge, die man verfeinern oder verwerfen kann. Mit jedem weiteren annotierten Bild soll die Genauigkeit steigen, bis man ein funktionierendes Modell hat, das die Daten zuverlässig vorannotiert.",
+        "In meinen Tests mit der Erweiterung in Label Studio wurde das Annotieren im Schnitt um bis zu 142,1 % schneller als von Hand, bei einer Precision von 99,3 % und einem Recall von 65,9 %.",
+        "Kurz gesagt habe ich eine Open-Source-Erweiterung für interaktive Instanzsegmentierung in Label Studio entwickelt, die die Annotationszeit senkt und ein funktionierendes Mask-R-CNN-Modell liefert.",
+        "Der Quellcode ist auf GitHub verfügbar."
+      ]
+    }
   },
   {
     "name": "Podcast",
-    "technologies": ["Object Detection", "NLP", "Deep Learning", "Banking"],
+    "technologies": [
+      "Object Detection",
+      "NLP",
+      "Deep Learning",
+      "Banking"
+    ],
     "description": "You can hear me in a podcast!",
-    "text": ["In a world of changing customer expectations it is even more important to make products and workflows simpler and easier to use.",
+    "text": [
+      "In a world of changing customer expectations it is even more important to make products and workflows simpler and easier to use.",
       "This is what we tried to do with 'Fotofinanzierung'. Fotofinanzierung is a Service where you can scan a price tag and get an immediate financing offer from your bank.",
       "I will tell you about the technologies we have used, our view on privacy and more in our podcast.",
-      "The podcast is available on german on all major platforms, including Apple Podcast, Google Podcast and Spotify."],
+      "The podcast is available on german on all major platforms, including Apple Podcast, Google Podcast and Spotify."
+    ],
     "language": "en",
-    "image": "./img/podcast.jpg",
+    "image": "/img/podcast.jpg",
     "date": "2020",
-    "link": "https://anchor.fm/kixperts/episodes/04-KI-Fotofinanzierung-mit-Tobias--Stephan-und-Tristan-eipguk/a-a32frr8"
+    "link": "https://anchor.fm/kixperts/episodes/04-KI-Fotofinanzierung-mit-Tobias--Stephan-und-Tristan-eipguk/a-a32frr8",
+    "keywords": [
+      "Interview",
+      "Bank",
+      "Finanzierung",
+      "Hörfunk"
+    ],
+    "slug": "podcast-fotofinanzierung",
+    "de": {
+      "description": "Du kannst mich in einem Podcast hören!",
+      "text": [
+        "In einer Welt sich wandelnder Kundenerwartungen ist es umso wichtiger, Produkte und Abläufe einfacher und leichter nutzbar zu machen.",
+        "Genau das haben wir mit der „Fotofinanzierung“ versucht: einem Dienst, bei dem man ein Preisschild fotografiert und sofort ein Finanzierungsangebot seiner Bank bekommt.",
+        "Im Podcast erzähle ich von den Technologien, die wir eingesetzt haben, von unserer Sicht auf Datenschutz und mehr.",
+        "Der Podcast ist auf Deutsch auf allen großen Plattformen verfügbar, darunter Apple Podcasts, Google Podcasts und Spotify."
+      ]
+    }
   },
   {
     "name": "Homepage",
-    "technologies": ["React", "JavaScript", "HTML", "SCSS", "AWS"],
+    "technologies": [
+      "React",
+      "JavaScript",
+      "HTML",
+      "SCSS",
+      "AWS"
+    ],
     "description": "This website was created using modern web technologies. The source code is available at Github.",
-    "text": ["To represent me and my work, I decided to built my own website, while expanding my React and JavaScript skills even further. The different components were built on basis of React and the source code is hosted on Github to let other users find inspiration for their own work.",
+    "text": [
+      "To represent me and my work, I decided to built my own website, while expanding my React and JavaScript skills even further. The different components were built on basis of React and the source code is hosted on Github to let other users find inspiration for their own work.",
       "During the process of hosting the site I gained my first experiences with Amazon Web Services and set up my Lightsail instance with Nginx, a MailServer and Weblog Analytics.",
-      "This project gave me a strong basis to work on further web projects."],
+      "This project gave me a strong basis to work on further web projects."
+    ],
     "language": "en",
-    "image": "./img/website.jpg",
+    "image": "/img/website.jpg",
     "date": "2020",
-    "github": "https://github.com/tristanratz/React-Template"
+    "github": "https://github.com/tristanratz/React-Template",
+    "keywords": [
+      "persönliche Webseite",
+      "Portfolio"
+    ],
+    "slug": "homepage",
+    "de": {
+      "description": "Diese Website ist mit modernen Webtechnologien gebaut. Der Quellcode ist auf GitHub verfügbar.",
+      "text": [
+        "Um mich und meine Arbeit zu zeigen, habe ich meine eigene Website gebaut und dabei meine React- und JavaScript-Kenntnisse weiter ausgebaut. Die Komponenten basieren auf React, und der Quellcode liegt auf GitHub, damit andere Inspiration für ihre eigenen Projekte finden.",
+        "Beim Hosting habe ich erste Erfahrungen mit Amazon Web Services gesammelt und eine Lightsail-Instanz mit Nginx, Mailserver und Weblog-Analytics aufgesetzt.",
+        "Das Projekt war eine solide Grundlage für weitere Webprojekte."
+      ]
+    }
   },
   {
     "name": "Question Answering System",
-    "technologies": ["Python", "Tensorflow", "BERT", "NLP", "NLTK", "Machine Learning"],
+    "technologies": [
+      "Python",
+      "Tensorflow",
+      "BERT",
+      "NLP",
+      "NLTK",
+      "Machine Learning"
+    ],
     "description": "In 2019 I was head of development of a Question Answering Project during a cooperation between TU Darmstadt and Serviceware SE.",
-    "text": ["Question Answering is a common task in natural language processing („NLP“) – a subfield of machine learning – in which the system processes a question and retrieves a short answer for the user.",
+    "text": [
+      "Question Answering is a common task in natural language processing („NLP“) – a subfield of machine learning – in which the system processes a question and retrieves a short answer for the user.",
       "Despite being common it is far from being solved. The idea is that the user does not need to search for his answer in a long text or catalogue of articles („dataset“), as he would with a normal search engine, but rather receives a preferably short answer to his question.",
       "During the project we had to explore NLP, Tensorflow, NLTK and other technologies to build a working solution. As a result we were able to generate answers to questions on a given database in multiple languages.",
-      "Our system was working more accurate and even faster than existing solutions (like cdQA by PNB Paribas)."],
+      "Our system was working more accurate and even faster than existing solutions (like cdQA by BNP Paribas)."
+    ],
     "language": "en",
-    "image": "./img/qa.jpg",
+    "image": "/img/qa.jpg",
     "date": "2019",
-    "link": "https://medium.com/@tristanratz/building-a-question-answering-system-bb49c320140c"
+    "link": "https://medium.com/@tristanratz/building-a-question-answering-system-bb49c320140c",
+    "keywords": [
+      "Fragen beantworten",
+      "Frage-Antwort-System",
+      "Suche"
+    ],
+    "slug": "question-answering-system",
+    "de": {
+      "description": "2019 habe ich die Entwicklung eines Question-Answering-Projekts in einer Kooperation zwischen der TU Darmstadt und der Serviceware SE geleitet.",
+      "text": [
+        "Question Answering ist eine typische Aufgabe im Natural Language Processing (NLP), einem Teilgebiet des Machine Learning: Das System verarbeitet eine Frage und liefert eine kurze Antwort.",
+        "So verbreitet die Aufgabe ist, gelöst ist sie noch lange nicht. Die Idee: Man muss die Antwort nicht in einem langen Text oder einem Katalog von Artikeln suchen wie bei einer normalen Suchmaschine, sondern bekommt eine möglichst kurze Antwort auf seine Frage.",
+        "Im Projekt haben wir NLP, TensorFlow, NLTK und weitere Technologien erkundet, um eine funktionierende Lösung zu bauen. Am Ende konnten wir Fragen zu einer gegebenen Datenbasis in mehreren Sprachen beantworten.",
+        "Unser System arbeitete genauer und sogar schneller als bestehende Lösungen (etwa cdQA von BNP Paribas)."
+      ]
+    }
   },
   {
     "name": "ChatApp",
-    "technologies": ["Swift", "iOS", "SwiftUI", "Project Catalyst", "Python", "Twisted"],
+    "technologies": [
+      "Swift",
+      "iOS",
+      "SwiftUI",
+      "Project Catalyst",
+      "Python",
+      "Twisted"
+    ],
     "description": "To learn more about sockets and the newly released SwiftUI API I built a simple ChatApp. The source code is available at Github.",
-    "text": ["After watching Apples WWDC I was especially excited about the simplicity of the newly released SwiftUI API. So I decided to create a simple ChatApp for iOS, iPadOS and macOS, which was able to communicate with a Python Server using Sockets.",
+    "text": [
+      "After watching Apples WWDC I was especially excited about the simplicity of the newly released SwiftUI API. So I decided to create a simple ChatApp for iOS, iPadOS and macOS, which was able to communicate with a Python Server using Sockets.",
       "To see the project page on Github click on the link down below."
     ],
     "language": "en",
-    "image": "./img/chatapp.jpg",
+    "image": "/img/chatapp.jpg",
     "date": "2019",
-    "github": "https://github.com/tristanratz/chatapp"
+    "github": "https://github.com/tristanratz/chatapp",
+    "keywords": [
+      "Nachrichten",
+      "Chat",
+      "iPhone App"
+    ],
+    "slug": "chatapp",
+    "de": {
+      "description": "Um mehr über Sockets und die damals neue SwiftUI-API zu lernen, habe ich eine einfache Chat-App gebaut. Der Quellcode ist auf GitHub verfügbar.",
+      "text": [
+        "Nach Apples WWDC war ich besonders von der Einfachheit der neuen SwiftUI-API begeistert. Also habe ich eine einfache Chat-App für iOS, iPadOS und macOS gebaut, die über Sockets mit einem Python-Server kommuniziert.",
+        "Die Projektseite auf GitHub findest du über den Link unten."
+      ]
+    }
   },
   {
     "name": "Website",
-    "technologies": ["PHP", "HTML", "CSS", "MySQL", "Python", "Twisted"],
+    "technologies": [
+      "PHP",
+      "HTML",
+      "CSS",
+      "MySQL",
+      "Python",
+      "Twisted"
+    ],
     "description": "Besides creating a website with my own CMS, I also created a corporate identity for a medical private practice.",
-    "text": ["The website (link below) was build on top of my previous project (CMS) and operates with it until today. I also created the corporate design for flyers, business cards and signs in the building."],
+    "text": [
+      "The website (link below) was build on top of my previous project (CMS) and operates with it until today. I also created the corporate design for flyers, business cards and signs in the building."
+    ],
     "language": "en",
-    "image": "./img/ugg.jpg",
+    "image": "/img/ugg.jpg",
     "date": "2016",
-    "link": "http://uro-gross-gerau.de/"
+    "link": "http://uro-gross-gerau.de/",
+    "keywords": [
+      "Webseite",
+      "Arztpraxis"
+    ],
+    "slug": "website-2016",
+    "de": {
+      "description": "Neben einer Website auf Basis meines eigenen CMS habe ich auch die Corporate Identity für eine Arztpraxis gestaltet.",
+      "text": [
+        "Die Website (Link unten) baut auf meinem vorherigen Projekt (CMS) auf und läuft bis heute damit. Außerdem habe ich das Corporate Design für Flyer, Visitenkarten und die Beschilderung im Gebäude entworfen."
+      ]
+    }
   },
   {
     "name": "Content Management System",
-    "technologies": ["PHP", "JavaScript", "MySQL", "HTML", "CSS"],
+    "technologies": [
+      "PHP",
+      "JavaScript",
+      "MySQL",
+      "HTML",
+      "CSS"
+    ],
     "description": "A content management system, build using PHP, MySQL, HTML and JavaScript. Until today it is still in use.",
-    "text": ["During my time at school I wanted to build my own content management system. Not only because I disliked existing solutions and found them to difficult to use, but also to gain experience in some web technologies. I gained experience in PHP, HTML and CSS and build my first object oriented JavaScript-Image Picker using the javaScript function prototype pattern.",
-    "The CMS was graded with the best grade in the german system."
+    "text": [
+      "During my time at school I wanted to build my own content management system. Not only because I disliked existing solutions and found them to difficult to use, but also to gain experience in some web technologies. I gained experience in PHP, HTML and CSS and build my first object oriented JavaScript-Image Picker using the javaScript function prototype pattern.",
+      "The CMS was graded with the best grade in the german system."
     ],
     "language": "en",
-    "image": "./img/bll.jpeg",
-    "date": "2015"
+    "image": "/img/bll.jpeg",
+    "date": "2015",
+    "keywords": [
+      "Schulprojekt",
+      "Webseiten verwalten"
+    ],
+    "slug": "content-management-system",
+    "de": {
+      "description": "Ein Content-Management-System, gebaut mit PHP, MySQL, HTML und JavaScript. Es ist bis heute im Einsatz.",
+      "text": [
+        "Während meiner Schulzeit wollte ich mein eigenes Content-Management-System bauen. Nicht nur, weil mir bestehende Lösungen nicht gefielen und zu kompliziert waren, sondern auch, um Erfahrung mit Webtechnologien zu sammeln. Dabei habe ich PHP, HTML und CSS gelernt und meinen ersten objektorientierten Bildauswahl-Dialog in JavaScript mit dem Prototype-Muster gebaut.",
+        "Das CMS wurde mit der Bestnote bewertet."
+      ]
+    }
   },
   {
     "name": "Website",
-    "technologies": ["PHP", "JavaScript", "MySQL", "HTML", "Wordpress"],
+    "technologies": [
+      "PHP",
+      "JavaScript",
+      "MySQL",
+      "HTML",
+      "Wordpress"
+    ],
     "description": "A website for a medical office build with Wordpress.",
-    "text": ["It was the first project I created using wordpress. I implemented my own wordpress theme and setup the website using wordpress. You can look at the resulting website at the link down below."],
+    "text": [
+      "It was the first project I created using wordpress. I implemented my own wordpress theme and setup the website using wordpress. You can look at the resulting website at the link down below."
+    ],
     "language": "en",
-    "image": "./img/code.png",
+    "image": "/img/code.jpg",
     "date": "2014",
-    "link": "http://uro-reinheim.de/"
+    "link": "http://uro-reinheim.de/",
+    "keywords": [
+      "Webseite",
+      "Arztpraxis"
+    ],
+    "slug": "website-2014",
+    "de": {
+      "description": "Eine Website für eine Arztpraxis, gebaut mit WordPress.",
+      "text": [
+        "Es war mein erstes Projekt mit WordPress. Ich habe ein eigenes WordPress-Theme entwickelt und die Website damit aufgesetzt. Das Ergebnis siehst du über den Link unten."
+      ]
+    }
   }
 ]
