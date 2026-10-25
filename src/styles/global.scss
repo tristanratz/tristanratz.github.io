@@ -92,7 +92,18 @@ button { font: inherit; color: inherit; }
   em { font-style: normal; color: var(--accent); }
 }
 
-/* The serif is reserved for projects, where it carries the artsy, editorial tone. */
+// Section titles ("The path so far", "Projects", "Let's talk.") share one editorial style: italic serif,
+// with the accent word in colour. Everything else (body, UI, slogan, name) is Montserrat.
+.sectionTitle {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  em { font-style: italic; color: var(--accent); }
+}
+
+/* Serif for project titles, where it carries the artsy, editorial tone. */
 .serif {
   font-family: var(--font-serif);
   font-weight: 400;

@@ -208,7 +208,7 @@ export function Projects() {
 
             <div className="projectsHead container">
                 <p className="eyebrow">{ui.eyebrow}</p>
-                <h2 className="display serif"><em>{ui.title}</em></h2>
+                <h2 className="display sectionTitle"><em>{ui.title}</em></h2>
             </div>
 
             <div className="viewSwitch" role="group" aria-label={ui.view}>
@@ -227,7 +227,7 @@ export function Projects() {
                              style={{ backgroundImage: `url(${p.image})`, ...vt("project-image", morphing === i) }} />
                         <div className="cardBody">
                             <p className="eyebrow">{p.date}</p>
-                            <h3 className="serif" style={vt("project-title", morphing === i)}>
+                            <h3 className="serif">
                                 <a href={`${route.lang === "de" ? "/de" : ""}/projects/${p.slug}/`} tabIndex={-1}
                                    onClick={(e) => e.preventDefault()}>{p.name}</a>
                             </h3>
@@ -258,7 +258,7 @@ export function Projects() {
                 {current && (
                     <article className="projectDetail">
                         <p className="eyebrow">{current.date}</p>
-                        <h3 className="display serif" style={vt("project-title", canMorph)}>{current.name}</h3>
+                        <h3 className="display serif">{current.name}</h3>
                         {current.technologies.length > 0 && <p className="tech">{current.technologies.join(" · ")}</p>}
                         <img src={current.image} alt="" style={vt("project-image", canMorph)} />
                         <p className="lead">{current.description}</p>

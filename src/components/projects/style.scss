@@ -55,7 +55,10 @@
   padding: 24px calc(50% - var(--card) / 2) 40px;
   scrollbar-width: none;
   position: relative;
-  outline-offset: -4px;
+
+  // Keyboard focus shows on the active card, not as a frame around the whole carousel.
+  &:focus-visible { outline: none; }
+  &:focus-visible .projectCard.active { box-shadow: var(--shadow), 0 0 0 3px var(--accent); }
 
   &::-webkit-scrollbar { display: none; }
 }
@@ -321,12 +324,12 @@
   .detailLinks { display: flex; gap: 8px; margin-top: 1.5rem; }
 }
 
-// Shared-element morph between a card and its detail dialog.
+// Shared-element morph between a card and its detail dialog. Titles aren't morphed: card and dialog
+// wrap them differently, and a stretched text snapshot looks jumpy on large screens.
 // The surface is clipped to its morphing box, and old/new content are staggered
 // instead of cross-faded so text and images never spill or ghost.
 ::view-transition-group(project-card),
-::view-transition-group(project-image),
-::view-transition-group(project-title) {
+::view-transition-group(project-image) {
   animation-duration: 0.5s;
   animation-timing-function: cubic-bezier(0.2, 0.75, 0.15, 1);
 }
@@ -356,15 +359,6 @@
   animation-duration: 0.5s;
 }
 
-::view-transition-old(project-title),
-::view-transition-new(project-title) {
-  height: 100%;
-  width: auto;
-  object-fit: contain;
-  object-position: left top;
-}
-::view-transition-old(project-title) { animation: vtOut 0.16s ease-out both; }
-::view-transition-new(project-title) { animation: vtIn 0.28s 0.2s ease-out both; }
 
 ::view-transition-old(root),
 ::view-transition-new(root) { animation-duration: 0.35s; }

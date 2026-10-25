@@ -52,7 +52,7 @@ const en = {
         technologies: "Technologies",
         interests: "Interests",
     },
-    experience: { eyebrow: "Experience", title: "The path so far" },
+    experience: { eyebrow: "Experience", title: ["The path ", "so far"] },
     projects: {
         eyebrow: "Selected work",
         title: "Projects",
@@ -155,7 +155,7 @@ const de: Strings = {
         technologies: "Technologien",
         interests: "Interessen",
     },
-    experience: { eyebrow: "Werdegang", title: "Der bisherige Weg" },
+    experience: { eyebrow: "Werdegang", title: ["Der bisherige ", "Weg"] },
     projects: {
         eyebrow: "Ausgewählte Arbeiten",
         title: "Projekte",

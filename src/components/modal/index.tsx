@@ -202,10 +202,19 @@ export function Modal({ open, onClose, label, children, transitionName, pullToCl
     const ref = useRef<HTMLDialogElement>(null);
 
     // Layout effect so the dialog opens within the same commit (needed for view transitions).
+    // Focus goes back where it came from on close, but without scrolling the page there.
+    const returnFocus = useRef<HTMLElement | null>(null);
     useIsomorphicLayoutEffect(() => {
         const dialog = ref.current!;
-        if (open && !dialog.open) { dialog.showModal(); dialog.scrollTop = 0; }
-        if (!open && dialog.open) dialog.close();
+        if (open && !dialog.open) {
+            returnFocus.current = document.activeElement as HTMLElement | null;
+            dialog.showModal();
+            dialog.scrollTop = 0;
+        }
+        if (!open && dialog.open) {
+            dialog.close();
+            returnFocus.current?.focus({ preventScroll: true });
+        }
     }, [open]);
 
     usePullToClose(ref, open && !!pullToClose, onClose);

@@ -22,7 +22,7 @@ export function Contact() {
                 <div className="contactGrid">
                 <div className="contactDetails">
                 <p className="eyebrow">{ui.contact.eyebrow}</p>
-                <h2 className="display">{ui.contact.title[0]}<em>{ui.contact.title[1]}</em></h2>
+                <h2 className="display sectionTitle">{ui.contact.title[0]}<em>{ui.contact.title[1]}</em></h2>
                 <a className="contactMail" href={"mailto:" + person.email}>{person.email}</a>
                 <dl className="contactFacts">
                     {person.phone && (

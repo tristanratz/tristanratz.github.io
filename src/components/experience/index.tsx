@@ -60,7 +60,7 @@ export function Experience() {
         <section className="section experience" id="experience">
             <div className="container">
                 <p className="eyebrow">{ui.eyebrow}</p>
-                <h2 className="display">{ui.title}</h2>
+                <h2 className="display sectionTitle">{ui.title[0]}<em>{ui.title[1]}</em></h2>
                 <ol className="timeline" ref={timelineRef}>
                     {years.map((year) => (
                         <li key={year.when} className="year">
