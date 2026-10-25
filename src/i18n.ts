@@ -98,7 +98,7 @@ const en = {
             work: "probably at work",
             evening: "probably on the bike or out at sea",
             weekend: "probably out at sea or on the bike",
-            night: "probably asleep, the bottle will wait",
+            night: "probably asleep, your message will wait till morning",
         },
         topics: { talk: "Speaking", collab: "Collaboration", hi: "Just saying hi", job: "Job opportunity" },
         templates: {
@@ -215,7 +215,7 @@ const de: Strings = {
             work: "vermutlich bei der Arbeit",
             evening: "vermutlich auf dem Rad oder auf See",
             weekend: "vermutlich auf See oder auf dem Rad",
-            night: "vermutlich am Schlafen, die Flasche wartet",
+            night: "vermutlich am Schlafen, die Flaschenpost wartet bis morgen",
         },
         topics: { talk: "Vortrag", collab: "Zusammenarbeit", hi: "Einfach Hallo", job: "Jobangebot" },
         templates: {
