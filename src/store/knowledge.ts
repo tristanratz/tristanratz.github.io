@@ -65,7 +65,7 @@ export function getDocs(lang: Lang): Doc[] {
         {
             kind: "Profile", title: l.technologies,
             answer: `${l.worksWith} ${list(person.favTec)}.`,
-            keywords: "technologies tech stack tools skills programming code Technologien Werkzeuge Fähigkeiten Programmieren",
+            keywords: "technologies tech stack tools skills programming languages code Technologien Werkzeuge Fähigkeiten Programmieren Programmiersprachen",
             action: showIn("about-technologies"),
         },
         {
@@ -189,7 +189,13 @@ function match(q: string, t: string, typoTarget: boolean): { weight: number, kin
     return null;
 }
 
-export interface Match { term: string, word: string, kind: MatchKind }
+export interface Match {
+    term: string;
+    word: string;
+    kind: MatchKind;
+    /** For synonyms: the query word they stand in for. */
+    synonymOf?: string;
+}
 
 export interface Result {
     doc: Doc;
@@ -201,13 +207,15 @@ export interface Result {
     matches: Match[];
     /** The sentence that best matches the query, to show instead of the whole text. */
     snippet: string;
+    /** No real match: only the closest topic by meaning (semantic mode). */
+    fallback?: boolean;
 }
 
 const queryTerms = (query: string) => {
-    const terms = new Map<string, boolean>(); // term -> is a synonym
+    const terms = new Map<string, string | null>(); // term -> query word it is a synonym of (null: typed itself)
     for (const t of tokenize(query)) {
-        terms.set(t, false);
-        for (const s of synonyms[t] ?? []) if (!terms.has(s)) terms.set(s, true);
+        terms.set(t, null);
+        for (const s of synonyms[t] ?? []) if (!terms.has(s)) terms.set(s, t);
     }
     return terms;
 };
@@ -236,28 +244,28 @@ function keywordResults(query: string, lang: Lang): Result[] {
         return memo.get(key)!;
     };
     // Per term and document: weighted term frequency and the matched words.
-    const perTerm = [...terms].map(([term, isSynonym]) => index.map(({ title, body }) => {
+    const perTerm = [...terms].map(([term, synonymOf]) => index.map(({ title, body }) => {
         let tf = 0;
         const found = new Map<string, MatchKind>();
         for (const t of body) {
             const m = cachedMatch(term, t);
-            if (m) { tf += m.weight; found.set(t, isSynonym ? "synonym" : m.kind); }
+            if (m) { tf += m.weight; found.set(t, synonymOf ? "synonym" : m.kind); }
         }
         const inTitle = title.some((t) => cachedMatch(term, t));
-        return { term, tf, inTitle, found };
+        return { term, synonymOf, tf, inTitle, found };
     }));
     return index
         .map(({ body }, i) => {
             let score = 0;
             const matches: Match[] = [];
             for (const termDocs of perTerm) {
-                const { term, tf, inTitle, found } = termDocs[i];
+                const { term, synonymOf, tf, inTitle, found } = termDocs[i];
                 if (!tf && !inTitle) continue;
                 const n = termDocs.filter((d) => d.tf > 0 || d.inTitle).length;
                 const idf = Math.log(1 + (docs.length - n + 0.5) / (n + 0.5));
                 const bm25 = tf / (tf + 1.2 * (0.25 + 0.75 * body.length / avgLength));
                 score += idf * (bm25 + (inTitle ? 1.5 : 0));
-                found.forEach((kind, word) => matches.push({ term, word, kind }));
+                found.forEach((kind, word) => matches.push({ term, word, kind, synonymOf: synonymOf ?? undefined }));
             }
             return { doc: docs[i], keyword: score, matches, snippet: "" };
         })
@@ -274,7 +282,10 @@ export function search(query: string, lang: Lang = "en", limit = 4): Result[] {
 // fused with the BM25 ranking through reciprocal rank fusion.
 // Title, answer and keywords are embedded separately and the best match counts,
 // so short precise fields aren't drowned out by averaging.
-const MIN_SIMILARITY = 0.47; // tuned so nonsense queries ("football", "Kochen") return nothing
+const MIN_SIMILARITY = 0.47; // tuned so nonsense queries ("football", "Kochen") return no real match
+// Without any real match, the closest topics above this are still offered, marked as such,
+// so the semantic search almost always has an answer. Below it (gibberish) it stays empty.
+const FALLBACK_SIMILARITY = 0.3;
 
 export function semanticSearch(query: string, model: EmbeddingModel, lang: Lang = "en", limit = 4,
                                minSimilarity = MIN_SIMILARITY): Result[] {
@@ -293,6 +304,16 @@ export function semanticSearch(query: string, model: EmbeddingModel, lang: Lang 
         fused.set(doc, (fused.get(doc) ?? 0) + weight / (60 + rank)));
     add(semantic, 1);
     add(keyword.map((r) => r.doc), 2);
+    if (!fused.size) {
+        // Only for queries made of real words: gibberish ("asdf qwer") falls apart into word pieces.
+        const words = contentWords(query).split(/\s+/).filter(Boolean);
+        const known = words.filter((word) => model.tokenize(word).length === 1).length;
+        if (known * 2 < words.length) return [];
+        return docs.filter((d) => similarity.get(d)! >= FALLBACK_SIMILARITY)
+            .sort((a, b) => similarity.get(b)! - similarity.get(a)!)
+            .slice(0, 2)
+            .map((doc) => ({ doc, keyword: 0, matches: [], snippet: doc.answer, semantic: similarity.get(doc), fallback: true }));
+    }
     const byDoc = new Map(keyword.map((r) => [r.doc, r]));
     return [...fused].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([doc]) => ({
         ...(byDoc.get(doc) ?? { doc, keyword: 0, matches: [], snippet: doc.answer }),

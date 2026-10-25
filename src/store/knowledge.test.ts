@@ -59,8 +59,27 @@ describe.each([
     it.each(typos)("tolerates the typo “%s” (%s)", (query, title) => {
         expect(run(query)[0]?.doc.title).toMatch(new RegExp("^" + title));
     });
-    it.each(nonsense)("finds nothing for “%s”", (query) => {
-        expect(run(query)).toEqual([]);
+    it.each(nonsense)("finds no real match for “%s”", (query) => {
+        // The semantic search may offer the closest topics, but only marked as fallback.
+        expect(run(query).every((r) => r.fallback)).toBe(true);
+    });
+});
+
+// Paraphrases with few or no shared keywords: the semantic search should still answer.
+const paraphrases = [
+    "what is he good at", "does he know machine learning", "career", "teamwork", "his education", "can I hire him",
+    "is he available for talks", "where can I find his code", "what tools does he use", "favourite topics", "hobbies",
+    "Was macht er beruflich?", "Programmiersprachen", "Erfahrung mit KI", "Studium", "Wo wohnt er?", "summaries",
+    "chat app", "climate", "remote work", "images", "banking", "where is he from",
+];
+
+describe("semantic search robustness", () => {
+    it("answers almost every question", () => {
+        const answered = paraphrases.filter((q) => semanticSearch(q, model).length > 0);
+        expect(answered.length / paraphrases.length).toBeGreaterThanOrEqual(0.95);
+    });
+    it("stays empty for gibberish", () => {
+        expect(semanticSearch("asdf qwer zxcv", model)).toEqual([]);
     });
 });
 
