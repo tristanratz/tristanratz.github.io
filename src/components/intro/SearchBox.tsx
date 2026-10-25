@@ -94,7 +94,9 @@ function Explanation({ result }: { result: Result }) {
                         {[...byWord.values()].map((m, i) => (
                             <span key={m.word}>
                                 {i > 0 && ", "}<b>{m.word}</b>
-                                {m.word !== m.term && <> {ui.for} „{m.term}“</>} ({ui.matchKinds[m.kind]})
+                                {m.synonymOf
+                                    ? <> ({ui.synonymOf} {ui.quote(m.synonymOf)})</>
+                                    : <>{m.word !== m.term && <> {ui.for} {ui.quote(m.term)}</>} ({ui.matchKinds[m.kind]})</>}
                             </span>
                         ))}
                     </li>
@@ -107,13 +109,13 @@ function Explanation({ result }: { result: Result }) {
 }
 
 /** Keeps ?q= in the address bar in sync, so a search can be shared as a link. */
-function useQueryParam(enabled: boolean): [string, (q: string) => void] {
-    const [query, setQuery] = useState("");
+function useQueryParam(enabled: boolean, initial: string): [string, (q: string) => void] {
+    const [query, setQuery] = useState(initial);
     const loaded = useRef(false);
     useEffect(() => {
-        if (enabled) setQuery(new URLSearchParams(window.location.search).get("q") ?? "");
+        if (enabled && !initial) setQuery(new URLSearchParams(window.location.search).get("q") ?? "");
         loaded.current = true;
-    }, [enabled]);
+    }, [enabled]); // eslint-disable-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (!enabled || !loaded.current) return;
         const timer = window.setTimeout(() => {
@@ -134,18 +136,44 @@ interface Props {
     autoFocus?: boolean;
     /** Reads and writes the query as ?q= in the URL (only one search box on the page should). */
     syncUrl?: boolean;
+    /** Query to start with (e.g. handed over from the hero). */
+    initialQuery?: string;
+    /**
+     * Entry point only (the hero): shows no results itself, but hands what's typed over to the search
+     * overlay, together with its position so the overlay can glide out of it.
+     */
+    entry?: boolean;
 }
 
-export function SearchBox({ network, animate = false, autoFocus, syncUrl = false }: Props) {
+/** Opens the search overlay with a query; `from` is where the overlay should appear to come from. */
+export const openSearch = (query: string, from?: DOMRect) =>
+    window.dispatchEvent(new CustomEvent("search:open", { detail: { query, from } }));
+
+export function SearchBox({ network, animate = false, autoFocus, syncUrl = false, initialQuery = "", entry = false }: Props) {
     const ui = useUi().search;
     const { lang } = useRoute().route;
     const id = useId();
     const answerRef = useRef<HTMLDivElement>(null);
-    const [query, setQuery] = useQueryParam(syncUrl);
+    const [query, setQuery] = useQueryParam(syncUrl, initialQuery);
+    const formRef = useRef<HTMLFormElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    // Handed-over text continues seamlessly: caret at the end.
+    useEffect(() => {
+        const input = inputRef.current;
+        if (autoFocus && input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+    }, [autoFocus]);
+
+    const handOver = (q: string) => {
+        if (!q) return;
+        openSearch(q, formRef.current?.getBoundingClientRect());
+        inputRef.current?.blur();
+    };
     const [active, setActive] = useState(-1);
     const placeholder = useTypedPlaceholder(animate, ui.suggestions);
     const { model, status } = useEmbeddingModel();
-    const results = useMemo(() => (model ? semanticSearch(query, model, lang) : search(query, lang)), [query, model, lang]);
+    const results = useMemo(() => (entry ? [] : model ? semanticSearch(query, model, lang) : search(query, lang)),
+        [query, model, lang, entry]);
     const [top, ...related] = results;
 
     useEffect(() => setActive(-1), [results]);
@@ -174,18 +202,18 @@ export function SearchBox({ network, animate = false, autoFocus, syncUrl = false
     const optionId = (i: number) => `${id}-option-${i}`;
 
     return (
-        <div className="heroSearch">
-            <form role="search" className="searchBox" onSubmit={(e) => e.preventDefault()}>
+        <div className={"heroSearch" + (entry ? " entry" : "")}>
+            <form role="search" className="searchBox" ref={formRef} onSubmit={(e) => { e.preventDefault(); if (entry) handOver(query); }}>
                 <IoSearch />
-                <input type="search" value={query} placeholder={placeholder || ui.placeholder} autoFocus={autoFocus}
+                <input ref={inputRef} type="search" value={entry ? "" : query} placeholder={placeholder || ui.placeholder}
                        aria-label={ui.label} autoComplete="off" spellCheck={false}
                        role="combobox" aria-expanded={results.length > 0} aria-controls={`${id}-results`}
                        aria-activedescendant={active >= 0 ? optionId(active) : undefined}
-                       onKeyDown={onKeyDown} onChange={(e) => setQuery(e.target.value)} />
+                       onKeyDown={onKeyDown} onChange={(e) => (entry ? handOver(e.target.value) : setQuery(e.target.value))} />
                 {query && <button type="button" className="clear" aria-label={ui.clear} onClick={() => setQuery("")}><IoClose /></button>}
             </form>
 
-            {status !== "off" && (
+            {!entry && status !== "off" && (
                 <p className={"searchMode " + status}>
                     {ui.status[status]} · <a href="?">{ui.status.off}</a>
                 </p>
@@ -194,11 +222,19 @@ export function SearchBox({ network, animate = false, autoFocus, syncUrl = false
             <div className="below">
             {/* Kept in place (just hidden) while typing, so the hero layout doesn't jump. */}
             <div className={"suggestions" + (query ? " hidden" : "")} aria-hidden={!!query}>
-                {ui.suggestions.slice(0, 3).map((s) => <button key={s} tabIndex={query ? -1 : 0} onClick={() => setQuery(s)}>{s}</button>)}
+                {ui.suggestions.slice(0, 3).map((s) => (
+                    <button key={s} tabIndex={query ? -1 : 0} onClick={() => (entry ? handOver(s) : setQuery(s))}>{s}</button>
+                ))}
             </div>
 
-            <div className="results" id={`${id}-results`} role="listbox" aria-label={ui.results}>
-                {query && !top && <p className="empty" role="status">{ui.empty}</p>}
+            {!entry && <div className="results" id={`${id}-results`} role="listbox" aria-label={ui.results}>
+                {query && !top && (
+                    <p className="empty" role="status">
+                        {ui.empty}
+                        {status === "off" && <> <a href={`?search=semantic&q=${encodeURIComponent(query)}`}>{ui.trySemantic} →</a></>}
+                    </p>
+                )}
+                {top?.fallback && <p className="closest">{ui.closest}</p>}
                 {top && (
                     <div className={"answerCard" + (active === 0 ? " active" : "")} ref={answerRef} key={top.doc.kind + top.doc.title + top.doc.answer.length}
                          id={optionId(0)} role="option" aria-selected={active === 0}>
@@ -222,7 +258,7 @@ export function SearchBox({ network, animate = false, autoFocus, syncUrl = false
                         ))}
                     </ul>
                                 )}
-            </div>
+            </div>}
             </div>
         </div>
     );

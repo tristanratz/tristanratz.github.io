@@ -117,6 +117,18 @@
   }
 }
 
+// Dims the page behind the search overlay; clicking it closes the search.
+.searchBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: rgba(8, 12, 20, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: backdropIn 0.3s ease;
+}
+@keyframes backdropIn { from { opacity: 0; } }
+
 .headerSearchPanel {
   position: absolute;
   top: calc(100% + 8px);

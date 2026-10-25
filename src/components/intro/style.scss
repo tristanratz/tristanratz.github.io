@@ -41,6 +41,7 @@
     background: radial-gradient(closest-side, var(--bg) 40%, color-mix(in srgb, var(--bg) 70%, transparent) 70%, transparent);
   }
 
+  // Clicks go through to the network, except on controls.
   a, button, input { pointer-events: auto; }
   .icons { justify-content: center; margin-top: 2rem; }
   .heroSearch { width: min(640px, 100%); margin-top: clamp(1.75rem, 4vh, 2.5rem); }
@@ -141,6 +142,7 @@
 }
 
 .downArrow {
+  transition: opacity 0.2s;
   position: absolute;
   bottom: max(24px, env(safe-area-inset-bottom));
   left: 50%;

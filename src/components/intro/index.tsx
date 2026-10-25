@@ -171,7 +171,7 @@ export function Intro() {
                         <p>{person.job}</p>
                     </figcaption>
                 </figure>
-                <SearchBox network={networkRef} animate={done || generatedOnce.current} syncUrl />
+                <SearchBox entry animate={done || generatedOnce.current} />
                 <Icons />
             </div>
             <a href="#about" className="downArrow iconButton" aria-label={ui.hero.scrollDown}><IoArrowDown /></a>

@@ -64,14 +64,6 @@
 .suggestions.hidden { visibility: hidden; }
 .headerSearchPanel .suggestions.hidden { display: none; }
 
-// In the hero the results float over the content below instead of pushing the centred layout around.
-.heroContent .results {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 10;
-}
 
 .suggestions {
   display: flex;
@@ -97,7 +89,13 @@
   width: 100%;
   text-align: left;
 
-  .empty { margin: 1.25rem 0 0; text-align: center; color: var(--muted); }
+  .empty {
+    margin: 1.25rem 0 0;
+    text-align: center;
+    color: var(--muted);
+    a { color: var(--accent); font-weight: 600; white-space: nowrap; }
+  }
+  .closest { margin: 1rem 0 -0.4rem; font-size: 0.82rem; font-weight: 600; color: var(--muted); }
 
   .kind {
     font-size: 0.68rem;
