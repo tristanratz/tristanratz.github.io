@@ -2,7 +2,7 @@ import { CSSProperties, Fragment, MutableRefObject, useEffect, useRef, useState 
 import { IoArrowDown } from "react-icons/io5";
 import { prefersReducedMotion, useIsomorphicLayoutEffect } from "../../env";
 import { useUi } from "../../i18n";
-import { useRoute } from "../../router";
+import { Lang, useRoute } from "../../router";
 import { getPerson } from "../../store/person";
 import { Icons } from "../Icons";
 import { NetworkHandle, NeuralNetwork } from "./NeuralNetwork";
@@ -10,21 +10,38 @@ import { SearchBox } from "./SearchBox";
 import "./style.scss";
 
 // The slogan is "generated" token by token, each token produced by one forward pass.
-const tokens = [
-    { text: "AI" },
-    { text: " should" },
-    { text: " be" },
-    { text: " a" },
-    { text: " means", lineBreak: true },
-    { text: " to" },
-    { text: " better", accent: true },
-    { text: " UX", accent: true },
-];
-const total = tokens.length;
+// (Same wording as `slogan` in person.tsx, which the page description uses.)
+interface Token { text: string, lineBreak?: boolean, accent?: boolean }
+const sloganTokens: Record<Lang, Token[]> = {
+    en: [
+        { text: "AI" },
+        { text: " integration" },
+        { text: " should" },
+        { text: " only" },
+        { text: " be", lineBreak: true },
+        { text: " a" },
+        { text: " means" },
+        { text: " to" },
+        { text: " better", accent: true },
+        { text: " UX", accent: true },
+    ],
+    de: [
+        { text: "KI" },
+        { text: "-Integration" },
+        { text: " sollte" },
+        { text: " nur" },
+        { text: " ein", lineBreak: true },
+        { text: " Mittel" },
+        { text: " zu" },
+        { text: " besserer", accent: true },
+        { text: " UX", accent: true },
+        { text: " sein" },
+    ],
+};
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // All tokens keep their final place (so centred lines never jump); only revealed ones are visible.
-function Tokens({ count, refs }: { count: number, refs: MutableRefObject<(HTMLSpanElement | null)[]> }) {
+function Tokens({ tokens, count, refs }: { tokens: Token[], count: number, refs: MutableRefObject<(HTMLSpanElement | null)[]> }) {
     return (
         <>
             {tokens.map((t, i) => (
@@ -47,7 +64,9 @@ export function Intro() {
     const [dot, setDot] = useState<CSSProperties>({});
     const glideRef = useRef(0);
     const ui = useUi();
-    const person = getPerson(useRoute().route.lang);
+    const { lang } = useRoute().route;
+    const person = getPerson(lang);
+    const tokens = sloganTokens[lang], total = tokens.length;
     // Both start "empty" so the pre-rendered HTML matches the first render; generation starts after mount.
     const [count, setCount] = useState(0);
     const [playing, setPlaying] = useState(false);
@@ -147,7 +166,7 @@ export function Intro() {
                 <figure className="quote">
                     <blockquote>
                         <p className="slogan" ref={sloganRef} aria-label={person.slogan}>
-                            <span aria-hidden="true"><Tokens count={count} refs={tokenRefs} /></span>
+                            <span aria-hidden="true"><Tokens tokens={tokens} count={count} refs={tokenRefs} /></span>
                             <span ref={dotRef} className={"dot" + (done ? " done" : "")} style={dot} aria-hidden="true" />
                         </p>
                     </blockquote>

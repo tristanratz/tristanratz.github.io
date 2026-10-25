@@ -31,7 +31,7 @@ export interface Person {
 export const person: Person = {
     firstName: "Tristan",
     lastName: "Ratz",
-    slogan: "AI should be a means to better UX",
+    slogan: "AI integration should only be a means to better UX",
     job: "Engineering Team Lead (AI, Search, Knowledge)",
     employer: "Serviceware",
     languages: [
@@ -81,6 +81,7 @@ const german: Partial<Omit<Person, "path">> & { path: Partial<Person["path"][num
         {name: "Englisch", level: "C1"},
         {name: "Französisch", level: "B1–B2"},
     ],
+    slogan: "KI-Integration sollte nur ein Mittel zu besserer UX sein",
     qualities: ["Teamplayer", "analytisch", "neugierig", "lernt schnell"],
     interests: ["Große Sprachmodelle", "Retrieval Augmented Generation", "Suche & Wissen", "Menschzentrierte KI"],
     about: [
