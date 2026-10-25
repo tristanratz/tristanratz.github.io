@@ -33,15 +33,13 @@
   --header-bg: rgba(11, 15, 21, 0.7);
   color-scheme: dark;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { @include dark; }
-}
-:root[data-theme="dark"] { @include dark; }
+// Dark is the default; light only when the visitor chose it (data-theme="light", see theme-init.js).
+:root:not([data-theme="light"]) { @include dark; }
 
 // Widgets (cards, search, buttons, dialogs) stay white in both themes;
 // on the dark background they glow softly instead of turning dark.
 $widgets: ".profileCard, .infoCard, .projectCard, .searchBox, .answerCard, .suggestions button, .iconButton, " +
-  ".headerInner > ul, .searchButton, .languageSwitch, .modal, .headerSearchPanel, .bottle";
+  ".headerInner > ul, .searchButton, .menuButton, .menuPanel, .modal, .headerSearchPanel, .bottle";
 
 @mixin light-widget {
   --bg: #f6f8fb;
@@ -55,10 +53,8 @@ $widgets: ".profileCard, .infoCard, .projectCard, .searchBox, .answerCard, .sugg
   color: var(--text);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) :is(#{$widgets}) { @include light-widget; }
-}
-:root[data-theme="dark"] :is(#{$widgets}) { @include light-widget; }
+
+:root:not([data-theme="light"]) :is(#{$widgets}) { @include light-widget; }
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 72px; }
 body {
