@@ -1,0 +1,131 @@
+:root {
+  --font-sans: "Montserrat Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --bg: #f6f8fb;
+  --bg-alt: #eef2f8;
+  --surface: #ffffff;
+  --text: #121821;
+  --muted: #5d6a7c;
+  --line: rgba(30, 55, 95, 0.1);
+  --accent: #5a7db0;
+  --accent-soft: rgba(90, 125, 176, 0.12);
+  --shadow: 0 1px 2px rgba(20, 35, 60, 0.04), 0 12px 40px rgba(20, 35, 60, 0.08);
+  --radius: 20px;
+  --net-node: 90, 125, 176;
+  --net-pulse: 120, 160, 225;
+  --header-bg: rgba(246, 248, 251, 0.75);
+  color-scheme: light;
+}
+@mixin dark {
+  --bg: #0b0f15;
+  --bg-alt: #10161f;
+  --surface: #141b25;
+  --text: #e8edf4;
+  --muted: #95a2b4;
+  --line: rgba(170, 195, 230, 0.12);
+  --accent: #9bb8e3;
+  --accent-soft: rgba(155, 184, 227, 0.12);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 16px 50px rgba(0, 0, 0, 0.35);
+  --net-node: 140, 175, 225;
+  --net-pulse: 190, 215, 255;
+  --header-bg: rgba(11, 15, 21, 0.7);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include dark; }
+}
+:root[data-theme="dark"] { @include dark; }
+
+// Widgets (cards, search, buttons, dialogs) stay white in both themes;
+// on the dark background they glow softly instead of turning dark.
+$widgets: ".profileCard, .infoCard, .projectCard, .searchBox, .answerCard, .suggestions button, .iconButton, " +
+  ".headerInner > ul, .searchButton, .languageSwitch, .modal, .headerSearchPanel, .bottle";
+
+@mixin light-widget {
+  --bg: #f6f8fb;
+  --surface: #ffffff;
+  --text: #121821;
+  --muted: #5d6a7c;
+  --line: rgba(30, 55, 95, 0.12);
+  --accent: #5a7db0;
+  --accent-soft: rgba(90, 125, 176, 0.12);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 0 40px rgba(155, 184, 227, 0.12), 0 18px 50px rgba(0, 0, 0, 0.45);
+  color: var(--text);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) :is(#{$widgets}) { @include light-widget; }
+}
+:root[data-theme="dark"] :is(#{$widgets}) { @include light-widget; }
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  transition: background-color 0.3s, color 0.3s;
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+.section { padding: clamp(4rem, 10vw, 8rem) 16px; }
+.container { max-width: 1100px; margin: 0 auto; }
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.display {
+  font-weight: 750;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  margin: 0;
+  em { font-style: normal; color: var(--accent); }
+}
+
+/* The serif is reserved for projects, where it carries the artsy, editorial tone. */
+.serif {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  em { font-style: italic; }
+}
+.iconButton {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
+  &:hover { transform: translateY(-2px); border-color: var(--accent); }
+  svg { font-size: 1.15rem; }
+}
+// Briefly marks the element a search result jumped to.
+.searchHighlight { animation: searchHighlight 2.2s ease-out; }
+@keyframes searchHighlight {
+  0%, 30% { box-shadow: 0 0 0 3px var(--accent), 0 0 40px rgba(var(--net-pulse), 0.5); }
+  100% { box-shadow: 0 0 0 3px transparent; }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+  &.is-visible { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}

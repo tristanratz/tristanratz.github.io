@@ -1,17 +1,5 @@
-a {
-  padding: 0 0.35rem;
-  transition: 0.1s;
-
-  &:link {
-    color: inherit;
-  }
-
-  &:hover, &:visited:hover {
-    color: inherit;
-    opacity: 0.4;
-  }
-
-  &:visited  {
-    color: inherit;
-  }
+.icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
