@@ -4,6 +4,14 @@
 This template is for developers who wish to host their own website.
 I used it to host my own.
 
+Built with React, TypeScript and Vite.
+
+```bash
+yarn install
+yarn dev     # local dev server
+yarn build   # production build into ./build
+```
+
 For using it, it takes two simple steps:
 - Putting your personal data in `scr/store/person.tsx` 
 - and making entries for your projects in `src/rsc/projects.json`

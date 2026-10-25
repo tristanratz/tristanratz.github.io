@@ -1,44 +1,29 @@
 {
   "name": "websitetristan",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "dependencies": {
-    "@testing-library/jest-dom": "^6.4.2",
-    "@testing-library/react": "^14.2.2",
-    "@testing-library/user-event": "^14.5.2",
-    "@types/classnames": "^2.2.10",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.12.4",
-    "@types/react": "^18.2.74",
-    "@types/react-dom": "^18.2.24",
-    "classnames": "^2.2.6",
-    "node-sass": "^9.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-icons": "^5.0.1",
-    "react-reveal": "^1.2.2",
-    "react-scripts": "5.0.1",
-    "typescript": "^5.4.3"
-  },
+  "type": "module",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "vite --configLoader bundle",
+    "dev": "vite --configLoader bundle",
+    "build": "tsc --noEmit && vite build --configLoader bundle && vite build --ssr src/entry-server.tsx --configLoader bundle && node scripts/prerender.mjs",
+    "preview": "vite preview --configLoader bundle",
+    "test": "vitest run"
   },
-  "eslintConfig": {
-    "extends": "react-app"
+  "dependencies": {
+    "@fontsource-variable/montserrat": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.7.0"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "devDependencies": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^6.1.2",
+    "sass": "^1.106.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^4.1.12"
   }
 }
