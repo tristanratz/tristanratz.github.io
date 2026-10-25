@@ -53,11 +53,12 @@
     &:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
   }
 
-  // The sea with the bottle bobbing on it.
+  // The sea with the bottle bobbing on it, along the bottom edge of the box.
   .sea {
+    --pad: clamp(1.25rem, 4vw, 1.75rem);
     position: relative;
     height: 56px;
-    margin: 0.4rem calc(-1 * clamp(1.25rem, 4vw, 1.75rem)) 0;
+    margin: 0.5rem calc(-1 * var(--pad)) calc(-1 * var(--pad));
 
     .waves {
       position: absolute;
@@ -68,7 +69,7 @@
       animation: waves 7s linear infinite;
       path { fill: var(--accent); }
       &.back { opacity: 0.12; animation-duration: 11s; }
-      &.front { opacity: 0.22; bottom: -6px; }
+      &.front { opacity: 0.22; bottom: -2px; }
     }
 
     .bottleShape {

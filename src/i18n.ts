@@ -88,7 +88,7 @@ const en = {
             weekend: "probably out at sea or on the bike",
             night: "probably asleep, the bottle will wait",
         },
-        topics: { job: "Job opportunity", collab: "Collaboration", talk: "Speaking", hi: "Just saying hi" },
+        topics: { talk: "Speaking", collab: "Collaboration", hi: "Just saying hi", job: "Job opportunity" },
         templates: {
             job: "Hi Tristan,\n\nwe’re looking for someone to lead … and I think you could be a great fit. Do you have time for a short call?\n\nBest,\n",
             collab: "Hi Tristan,\n\nI’m working on … and would love to team up with you on …\n\nBest,\n",
@@ -193,7 +193,7 @@ const de: Strings = {
             weekend: "vermutlich auf See oder auf dem Rad",
             night: "vermutlich am Schlafen, die Flasche wartet",
         },
-        topics: { job: "Jobangebot", collab: "Zusammenarbeit", talk: "Vortrag", hi: "Einfach Hallo" },
+        topics: { talk: "Vortrag", collab: "Zusammenarbeit", hi: "Einfach Hallo", job: "Jobangebot" },
         templates: {
             job: "Hallo Tristan,\n\nwir suchen jemanden, der … leitet, und ich glaube, du könntest gut passen. Hast du Zeit für ein kurzes Gespräch?\n\nViele Grüße\n",
             collab: "Hallo Tristan,\n\nich arbeite gerade an … und würde gern mit dir zusammen an … arbeiten.\n\nViele Grüße\n",

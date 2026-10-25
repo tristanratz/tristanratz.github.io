@@ -78,6 +78,11 @@ export function Bottle({ email }: { email: string }) {
                           rows={6} maxLength={2000} />
             </label>
 
+            <div className="sendRow">
+                <button type="submit" className="send" disabled={untouched || state === "sailing"}>{ui.send}</button>
+                {state === "sent" && <p className="sent" role="status">{ui.sent}</p>}
+            </div>
+
             <div className="sea" aria-hidden="true">
                 <svg className="waves back" viewBox="0 0 400 40" preserveAspectRatio="none">
                     <path d="M0 22 Q25 12 50 22 T100 22 T150 22 T200 22 T250 22 T300 22 T350 22 T400 22 V40 H0 Z" />
@@ -90,11 +95,6 @@ export function Bottle({ email }: { email: string }) {
                 <svg className="waves front" viewBox="0 0 400 40" preserveAspectRatio="none">
                     <path d="M0 26 Q25 18 50 26 T100 26 T150 26 T200 26 T250 26 T300 26 T350 26 T400 26 V40 H0 Z" />
                 </svg>
-            </div>
-
-            <div className="sendRow">
-                <button type="submit" className="send" disabled={untouched || state === "sailing"}>{ui.send}</button>
-                {state === "sent" && <p className="sent" role="status">{ui.sent}</p>}
             </div>
         </form>
     );

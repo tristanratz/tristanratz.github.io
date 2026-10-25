@@ -9,7 +9,7 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
     gap: 2.5rem 4rem;
-    align-items: start;
+    align-items: center; // the details sit at the middle of the bottle box
     @media (max-width: 860px) { grid-template-columns: 1fr; }
   }
   .contactFacts:last-child { margin-bottom: 0; }
