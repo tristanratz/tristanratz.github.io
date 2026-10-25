@@ -39,15 +39,13 @@ export function Projects() {
     const routed = projects.findIndex((p) => p.slug === route.project);
     const open = routed >= 0 ? routed : null;
     const [active, setActive] = useState(Math.max(0, routed));
-    // Carousel or similarity map; remembered per visitor (read after mount, the pre-rendered page shows the carousel).
+    // Carousel or similarity map; every visit starts with the carousel.
     const [view, setView] = useState<"carousel" | "map">("carousel");
     useEffect(() => {
-        try { if (localStorage.getItem("projectView") === "map") setView("map"); } catch { /* storage unavailable */ }
+        // The choice used to be remembered; forget it where it still is.
+        try { localStorage.removeItem("projectView"); } catch { /* storage unavailable */ }
     }, []);
-    const chooseView = (next: "carousel" | "map") => {
-        setView(next);
-        try { localStorage.setItem("projectView", next); } catch { /* storage unavailable */ }
-    };
+    const chooseView = setView;
     const setOpen = (i: number | null) =>
         navigate({ ...route, project: i === null ? null : projects[i].slug }, { replace: i === null });
     // The card currently carrying the shared-element names (only during a transition).
