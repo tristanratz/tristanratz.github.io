@@ -6,6 +6,13 @@
  * pointer on a damped spring, and when let go it flies, spins and lands, on its wheels or anywhere
  * else (wheels, saddle, the rider's head), bouncing a little. Lying on its side the rider gets back up
  * after a moment and rides on. Once off either side, the next ride comes after a pause.
+ *
+ * Text in the section can carry it too: each line of text is a ledge (`ledges`) that holds the bike
+ * from above (it passes through from below). Dropped onto one, it rides along it and falls off its end
+ * back down, to the line or the next ledge below.
+ *
+ * Dropped into the water of the bottle box (`water`), it splashes (`splash` tells the sea where and
+ * how hard), slows down, sinks and is gone until the next ride.
  */
 
 export const DT = 1 / 240;
@@ -28,8 +35,11 @@ export const CONTACTS = [
     { x: 9, y: -47, r: 5 },       // the rider's head
 ].map((p) => ({ x: p.x * SIZE, y: p.y * SIZE, r: p.r * SIZE }));
 
+/** A line of text the bike can stand on: from x1 to x2 at height y (canvas coordinates). */
+export interface Ledge { x1: number, x2: number, y: number }
+
 export interface BikeBody { x: number, y: number, a: number, vx: number, vy: number, w: number }
-type Phase = "riding" | "free" | "away";
+type Phase = "riding" | "free" | "sinking" | "away";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
@@ -37,6 +47,13 @@ export class BikeSim {
     width: number;
     /** Where the ground is (the line), and how high the bike may fly (canvas top). */
     ground: number;
+    ledges: Ledge[] = [];
+    /** The water's surface in the bottle box, if it's in reach. */
+    water: Ledge | null = null;
+    /** Set when the bike hits the water (x and downward speed), for the sea to splash; cleared by the reader. */
+    splash: { x: number, speed: number } | null = null;
+    /** 0..1 how far it has gone under, for fading it out. */
+    sunk = 0;
     ceiling: number;
     bike: BikeBody;
     phase: Phase = "away";
@@ -59,31 +76,51 @@ export class BikeSim {
         return { x: -40, y: this.ground - WHEEL, a: 0, vx: RIDE, vy: 0, w: 0 };
     }
 
-    /** Point of the bike under (x, y) in its own frame, if any (the bike is about 50×60 px). */
-    hit(x: number, y: number) {
-        if (this.phase === "away") return null;
+    /** Point of the bike under (x, y) in its own frame, if any (the bike is about 50×60 px; `slack` widens it, for fingers). */
+    hit(x: number, y: number, slack = 0) {
+        if (this.phase === "away" || this.phase === "sinking") return null;
         const b = this.bike, c = Math.cos(b.a), s = Math.sin(b.a);
         const dx = x - b.x, dy = y - b.y, lx = dx * c + dy * s, ly = -dx * s + dy * c;
-        return lx > -30 * SIZE && lx < 30 * SIZE && ly > -56 * SIZE && ly < WHEEL + 3 ? { lx, ly } : null;
+        return lx > -30 * SIZE - slack && lx < 30 * SIZE + slack && ly > -56 * SIZE - slack && ly < WHEEL + 3 + slack ? { lx, ly } : null;
     }
 
     step() {
         if (this.phase === "away") {
             this.wait -= DT;
-            if (this.wait <= 0) { this.bike = this.start(); this.phase = "riding"; this.down = 0; }
+            if (this.wait <= 0) { this.bike = this.start(); this.phase = "riding"; this.down = 0; this.sunk = 0; }
+            return;
+        }
+        if (this.phase === "sinking") {
+            // Under water: heavy drag, a slow sink and a slow roll, fading away.
+            const b = this.bike;
+            const drag = Math.exp(-DT * 4);
+            b.vx *= drag;
+            b.vy = b.vy * drag + 40 * (1 - drag);
+            b.w = b.w * drag + 0.6 * (1 - drag);
+            b.x += b.vx * DT;
+            b.y += b.vy * DT;
+            b.a += b.w * DT;
+            this.sunk = Math.min(1, this.sunk + DT / 1.6);
+            if (this.sunk >= 1) { this.phase = "away"; this.wait = PAUSE; }
             return;
         }
         const b = this.bike, c = Math.cos(b.a), s = Math.sin(b.a);
         const world = (p: { x: number, y: number }) => ({ x: b.x + p.x * c - p.y * s, y: b.y + p.x * s + p.y * c });
 
         if (this.phase === "riding" && !this.grab) {
-            // Pedalling along on the line.
+            // Pedalling along the line or a ledge; past a ledge's end it falls.
             b.vx += (RIDE - b.vx) * (1 - Math.exp(-DT / 0.6));
-            b.vy = 0;
             b.w = 0;
             b.a = 0;
-            b.y = this.ground - WHEEL;
             b.x += b.vx * DT;
+            const surface = this.surfaceAt(b.x, b.y + WHEEL);
+            if (surface > b.y + WHEEL + 1.5) {
+                this.phase = "free";
+                b.vy = 0;
+            } else {
+                b.vy = 0;
+                b.y = surface - WHEEL;
+            }
             this.wheelTurn += (b.vx / WHEEL) * DT;
         } else {
             // Free: gravity, the pointer's spring, and the ground pushing back at whatever touches it.
@@ -95,11 +132,12 @@ export class BikeSim {
             const pointVelocity = (p: { x: number, y: number }) => ({ x: b.vx - b.w * (p.y - b.y), y: b.vy + b.w * (p.x - b.x) });
             let onGround = false, wheelsDown = 0;
             CONTACTS.forEach((contact, i) => {
-                const p = world(contact), depth = p.y + contact.r - this.ground;
+                const p = world(contact), v = pointVelocity(p);
+                // Ledges only catch what comes down onto them; rising, it passes through.
+                const depth = p.y + contact.r - this.surfaceAt(p.x, p.y + contact.r, v.y > -30);
                 if (depth <= 0) return;
                 onGround = true;
                 if (i < 2) wheelsDown++;
-                const v = pointVelocity(p);
                 // Wheels roll (little friction along the ground), everything else scrapes.
                 const grip = i < 2 ? 0.8 : 6;
                 force(p, -grip * v.x * MASS, -3600 * depth * MASS - 50 * v.y * MASS); // y grows downwards: the ground pushes up
@@ -139,11 +177,34 @@ export class BikeSim {
         const cheering = this.grab || this.phase === "free" ? 1 : 0;
         this.armsUp += (cheering - this.armsUp) * (1 - Math.exp(-DT / (cheering ? 0.12 : 0.35)));
 
+        // Into the water: a splash, and down it goes.
+        const water = this.water;
+        if (water && !this.grab && b.x > water.x1 && b.x < water.x2 && b.y > water.y && b.y < water.y + 30 && b.vy > 0) {
+            this.splash = { x: b.x, speed: b.vy };
+            this.phase = "sinking";
+            b.vx *= 0.4;
+            b.vy *= 0.25;
+            return;
+        }
+
         // Gone off either side: the next ride comes after a pause.
         if (!this.grab && (b.x > this.width + 50 || b.x < -60)) {
             this.phase = "away";
             this.wait = PAUSE;
         }
+    }
+
+    /**
+     * Height of what's under a point whose lowest edge is at `foot`: the nearest ledge just below or at
+     * it (a little sunk in counts, so a landing is caught), else the line.
+     */
+    surfaceAt(x: number, foot: number, ledges = true) {
+        let surface = this.ground;
+        if (!ledges) return surface;
+        for (const ledge of this.ledges) {
+            if (x >= ledge.x1 && x <= ledge.x2 && ledge.y >= foot - 8 && ledge.y < surface) surface = ledge.y;
+        }
+        return surface;
     }
 
     advance(seconds: number) {

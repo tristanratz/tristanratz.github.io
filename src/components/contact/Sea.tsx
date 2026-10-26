@@ -10,7 +10,8 @@ import { Body, DT, HEIGHT, Letter, LETTER, RADIUS, SeaSim, SPACING } from "./sea
  *
  * The canvas covers the whole box (`box`), so the bottle can be lifted out of the water and thrown
  * across it; the water stays along the bottom. It doesn't take clicks itself: the box listens and only
- * catches those that grab the bottle, so the form underneath works as before.
+ * catches those that grab the bottle, so the form underneath works as before. The bike from the line
+ * below can be thrown in, too (`sea:splash`).
  */
 export function Sea({ away, box }: { away: boolean, box: RefObject<HTMLElement> }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -80,8 +81,10 @@ export function Sea({ away, box }: { away: boolean, box: RefObject<HTMLElement> 
             const r = canvas.getBoundingClientRect();
             return { x: e.clientX - r.left, y: e.clientY - r.top - offset };
         };
+        // Fingers are less precise than a mouse: they grab from a little further off.
+        const slack = (e: { pointerType?: string }) => (e.pointerType === "mouse" ? 0 : 12);
         const onDown = (e: PointerEvent) => {
-            const p = point(e), local = sim.hit(p.x, p.y);
+            const p = point(e), local = sim.hit(p.x, p.y, slack(e));
             if (local) {
                 sim.grab = { ...local, ...p };
                 host.setPointerCapture(e.pointerId);
@@ -91,10 +94,16 @@ export function Sea({ away, box }: { away: boolean, box: RefObject<HTMLElement> 
                 sim.push(p.x, 160); // a tap on the water
             }
         };
-        // On touch screens a finger on the bottle grabs it instead of scrolling the page.
+        // On touch screens a finger on the bottle grabs it instead of scrolling the page, and keeps
+        // holding it while it moves.
         const onTouch = (e: TouchEvent) => {
             const t = e.touches[0];
-            if (t && sim.hit(point(t).x, point(t).y)) e.preventDefault();
+            if (sim.grab || (t && sim.hit(point(t).x, point(t).y, 12))) e.preventDefault();
+        };
+        // The bike falling into the water (Bike.tsx).
+        const onSplash = (e: Event) => {
+            const { clientX, speed } = (e as CustomEvent<{ clientX: number, speed: number }>).detail;
+            sim.splash(clientX - canvas.getBoundingClientRect().left, speed);
         };
         const onMove = (e: PointerEvent) => {
             const p = point(e);
@@ -148,6 +157,8 @@ export function Sea({ away, box }: { away: boolean, box: RefObject<HTMLElement> 
             host.addEventListener("pointercancel", onUp);
             host.addEventListener("pointerleave", onLeave);
             host.addEventListener("touchstart", onTouch, { passive: false });
+            host.addEventListener("touchmove", onTouch, { passive: false });
+            window.addEventListener("sea:splash", onSplash);
         }
         return () => {
             stop();
@@ -160,6 +171,8 @@ export function Sea({ away, box }: { away: boolean, box: RefObject<HTMLElement> 
             host.removeEventListener("pointercancel", onUp);
             host.removeEventListener("pointerleave", onLeave);
             host.removeEventListener("touchstart", onTouch);
+            host.removeEventListener("touchmove", onTouch);
+            window.removeEventListener("sea:splash", onSplash);
         };
     }, [box]);
 

@@ -94,13 +94,26 @@ export class SeaSim {
         }
     }
 
-    /** Point on the bottle under (x, y) in its own frame, if any. */
-    hit(x: number, y: number) {
+    /** Something falling into the water at x with a downward speed: a dip and spray. */
+    splash(x: number, speed: number) {
+        const strength = Math.min(speed, 1200);
+        for (let k = -2; k <= 2; k++) this.push(x + k * SPACING, strength * (k ? 0.12 : 0.2));
+        for (let n = Math.min(14, Math.round(strength / 80)); n > 0 && this.drops.length < 60; n--) {
+            this.drops.push({
+                x: x + (this.random() - 0.5) * 16, y: this.surface(x) - 2,
+                vx: (this.random() - 0.5) * 220,
+                vy: -strength * (0.25 + this.random() * 0.3),
+            });
+        }
+    }
+
+    /** Point on the bottle under (x, y) in its own frame, if any (`slack` widens it, for fingers). */
+    hit(x: number, y: number, slack = 0) {
         const b = this.bottle;
         if (!b) return null;
         const dx = x - b.x, dy = y - b.y, c = Math.cos(b.a), s = Math.sin(b.a);
         const lx = dx * c + dy * s, ly = -dx * s + dy * c;
-        return Math.abs(lx) < LENGTH / 2 + 4 && Math.abs(ly) < RADIUS + 6 ? { lx, ly } : null;
+        return Math.abs(lx) < LENGTH / 2 + 4 + slack && Math.abs(ly) < RADIUS + 6 + slack ? { lx, ly } : null;
     }
 
     step() {
