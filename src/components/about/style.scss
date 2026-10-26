@@ -3,34 +3,57 @@
   background: linear-gradient(var(--bg), var(--bg-alt) 14rem, var(--bg-alt) calc(100% - 14rem), var(--bg));
 }
 
-// The profile circle in the middle, three tiles on either side (on smaller screens: the circle on top,
-// the tiles below). The constellation lines run through the gaps.
+// Wide screens: the profile circle in the middle, the tiles around it on an ellipse, like rays (three
+// on either side). Narrower: the circle on top, the tiles below in a grid. The constellation lines run
+// from the circle to each tile.
 .aboutGrid {
   position: relative;
   max-width: 1180px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 420px minmax(0, 1fr);
-  grid-template-areas: "a p d" "b p e" "c p f";
-  grid-template-rows: repeat(3, 1fr); // tiles all the same height
-  gap: 28px 48px;
-  align-items: center;
-  padding-top: 40px; // room for the portrait sticking out of the circle
+  height: 720px;
 
-  .profileCard { grid-area: p; }
-  #about-based-in { grid-area: a; }
-  #about-working-at { grid-area: b; }
-  #about-languages { grid-area: c; }
-  #about-qualities { grid-area: d; }
-  #about-technologies { grid-area: e; }
-  #about-interests { grid-area: f; }
+  // Each tile's direction from the middle (0deg: right, y grows downwards).
+  #about-based-in { --t: 218deg; }
+  #about-working-at { --t: 180deg; }
+  #about-languages { --t: 142deg; }
+  #about-qualities { --t: -38deg; }
+  #about-technologies { --t: 0deg; }
+  #about-interests { --t: 38deg; }
+
+  // Placed with margins, not translate: the constellation moves the tiles with translate.
+  .profileCard {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 420px;
+    margin: -210px 0 0 -210px;
+  }
+  .infoCard {
+    position: absolute;
+    left: calc(50% + cos(var(--t)) * 420px);
+    top: calc(50% + sin(var(--t)) * 335px);
+    width: 200px;
+    height: 190px;
+    margin: -95px 0 0 -100px;
+  }
 
   @media (max-width: 1080px) {
+    height: auto;
+    max-width: 720px;
+    display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas: "p p" "a d" "b e" "c f";
-    grid-template-rows: auto repeat(3, 1fr);
+    grid-template-rows: auto repeat(3, 1fr); // tiles all the same height
     gap: 32px;
-    max-width: 720px;
-    padding-top: 75px;
+    padding-top: 75px; // room for the portrait sticking out of the circle
+
+    .profileCard, .infoCard { position: relative; left: auto; top: auto; margin: 0; width: auto; height: auto; }
+    .profileCard { grid-area: p; width: 100%; }
+    #about-based-in { grid-area: a; }
+    #about-working-at { grid-area: b; }
+    #about-languages { grid-area: c; }
+    #about-qualities { grid-area: d; }
+    #about-technologies { grid-area: e; }
+    #about-interests { grid-area: f; }
   }
   @media (max-width: 560px) {
     grid-template-columns: minmax(0, 1fr);
@@ -307,8 +330,8 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   transform-style: preserve-3d;
   > svg {
     display: block;
-    margin: 0.1rem auto 0.8rem;
-    font-size: 2rem;
+    margin: 0 auto 0.6rem;
+    font-size: 1.7rem;
     color: var(--accent);
     filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0));
     transition: transform 0.3s $ease, filter 0.3s $ease;
@@ -325,15 +348,15 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
 .infoCard {
   position: relative;
-  padding: 1.5rem 1.25rem;
+  padding: 1rem 0.9rem;
   // Stretched to the row's height (all rows equal), the content in the middle.
   align-self: stretch;
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  font-size: 0.92rem;
-  line-height: 1.55;
+  font-size: 0.82rem;
+  line-height: 1.5;
 
   h3 {
     margin: 0 0 0.5rem;
@@ -360,7 +383,7 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   pointer-events: none;
 }
 .constellation {
-  .profileCard, .infoCard { position: relative; z-index: 1; }
+  .profileCard, .infoCard { z-index: 1; } // above the lines (both are positioned already)
   .infoCard {
     cursor: grab;
     touch-action: pan-y; // a finger drags sideways, the page still scrolls
@@ -371,3 +394,12 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
 // Smaller in the circle.
 .profileCard .profileMore { padding: 0.35rem 0.85rem; font-size: 0.78rem; }
+
+// The tiles are small; under the pointer one zooms in (over its neighbours) to be read comfortably.
+.infoCard.floating.reveal.is-visible:hover {
+  transform: perspective(700px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(-4px) scale(1.18);
+  z-index: 4;
+}
+@media (prefers-reduced-motion: reduce) {
+  .infoCard.floating.reveal.is-visible:hover { transform: none; }
+}
