@@ -4,10 +4,10 @@ import { ConstellationSim } from "./constellationPhysics";
 const links: [number, number][] = [[0, 1], [0, 2], [1, 2], [1, 3], [2, 3]];
 
 describe("constellation", () => {
-    it("drifts only a little at rest and keeps the profile card still", () => {
+    it("floats only a little at rest and keeps the profile card still", () => {
         const sim = new ConstellationSim(4, links);
         sim.advance(10);
-        for (const node of sim.nodes.slice(1)) expect(Math.hypot(node.x, node.y)).toBeLessThan(6);
+        for (const node of sim.nodes.slice(1)) expect(Math.hypot(node.x, node.y)).toBeLessThan(12);
         expect(sim.nodes[0]).toMatchObject({ x: 0, y: 0 });
     });
 
@@ -38,14 +38,15 @@ describe("constellation", () => {
         let overshot = false;
         for (let t = 0; t < 4; t += 1 / 60) { sim.advance(1 / 60); if (sim.nodes[3].x < -10) overshot = true; }
         expect(overshot).toBe(true); // swings past its place
-        for (const node of sim.nodes) expect(Math.hypot(node.x, node.y)).toBeLessThan(6); // and settles
+        for (const node of sim.nodes) expect(Math.hypot(node.x, node.y)).toBeLessThan(12); // and settles
     });
 
     it("shifts the tiles by different amounts when the pointer moves (parallax)", () => {
-        const sim = new ConstellationSim(4, links);
+        const sim = new ConstellationSim(4, links), still = new ConstellationSim(4, links);
         sim.look = { x: 1, y: 0 };
         sim.advance(4);
-        const shifts = sim.nodes.slice(1).map((n) => n.x);
+        still.advance(4); // the same floating, without the pointer
+        const shifts = sim.nodes.slice(1).map((n, i) => n.x - still.nodes[i + 1].x);
         for (const x of shifts) expect(x).toBeLessThan(-3); // against the pointer
         expect(Math.max(...shifts) - Math.min(...shifts)).toBeGreaterThan(4); // relative to each other
         expect(sim.nodes[0].x).toBe(0);

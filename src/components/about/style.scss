@@ -11,6 +11,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 420px minmax(0, 1fr);
   grid-template-areas: "a p d" "b p e" "c p f";
+  grid-template-rows: repeat(3, 1fr); // tiles all the same height
   gap: 28px 48px;
   align-items: center;
   padding-top: 40px; // room for the portrait sticking out of the circle
@@ -26,6 +27,7 @@
   @media (max-width: 1080px) {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas: "p p" "a d" "b e" "c f";
+    grid-template-rows: auto repeat(3, 1fr);
     gap: 32px;
     max-width: 720px;
     padding-top: 75px;
@@ -33,6 +35,7 @@
   @media (max-width: 560px) {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "p" "a" "b" "c" "d" "e" "f";
+    grid-template-rows: auto repeat(6, 1fr);
     gap: 24px;
   }
 }
@@ -60,6 +63,19 @@
   padding: 62px 50px 46px;
   text-align: center;
   cursor: pointer;
+  // The surface is its own layer (::before), so the links can hide underneath it.
+  isolation: isolate;
+  background: transparent;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: var(--surface);
+  }
+  &::after { z-index: 1; } // the light under the pointer
+  > h2, > .job, > .profileText, > .profileMore { position: relative; z-index: 1; }
 
   .portrait {
     position: absolute;
@@ -72,6 +88,7 @@
     border-radius: 50%;
     filter: grayscale(1) contrast(1.05);
     box-shadow: 0 0 0 5px var(--surface), 0 0 0 6px var(--line), var(--shadow);
+    z-index: 2;
   }
   h2 {
     margin: 0 0 0.2rem;
@@ -85,6 +102,7 @@
   .icons {
     position: absolute;
     inset: 0;
+    z-index: -1;
     pointer-events: none;
     transition: opacity 0.3s;
     // Close together, just below the edge.
@@ -94,10 +112,24 @@
       top: calc(50% + sin(var(--a)) * (50% + 30px));
       translate: -50% -50%;
       pointer-events: auto;
+      // A larger, invisible hit area bridges the gap to the circle (the hover holds on the way over).
+      &::after { content: ""; position: absolute; inset: -14px; border-radius: 50%; }
     }
     // Fanned out around the bottom (90deg is straight down).
     @for $k from 1 through 5 {
-      a:nth-child(#{$k}) { --a: #{90 - ($k - 3) * 13}deg; } // from the left
+      a:nth-child(#{$k}) { --a: #{90 - ($k - 3) * 13}deg; --k: #{$k - 1}; } // from the left
+    }
+  }
+  // Where there's hover: tucked away behind the circle, they slide out when the pointer comes in (or
+  // the keyboard), one after the other.
+  @media (hover: hover) and (min-width: 561px) {
+    .icons a {
+      transform: translate(calc(cos(var(--a)) * -58px), calc(sin(var(--a)) * -58px)) scale(0.7);
+      transition: transform 0.22s cubic-bezier(0.4, 0, 0.8, 0.4) calc((4 - var(--k)) * 20ms);
+    }
+    &:hover .icons a, &:focus-within .icons a {
+      transform: none;
+      transition: transform 0.36s cubic-bezier(0.3, 1.5, 0.5, 1) calc(30ms + var(--k) * 45ms);
     }
   }
 
@@ -111,6 +143,7 @@
     padding: 76px 1.5rem 1.75rem;
     .icons {
       position: static;
+      z-index: 1;
       display: flex;
       justify-content: center;
       margin-top: 1.25rem;
@@ -293,6 +326,11 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 .infoCard {
   position: relative;
   padding: 1.5rem 1.25rem;
+  // Stretched to the row's height (all rows equal), the content in the middle.
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   text-align: center;
   font-size: 0.92rem;
   line-height: 1.55;

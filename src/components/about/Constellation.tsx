@@ -6,8 +6,8 @@ interface Box { x: number, y: number, w: number, h: number }
 
 /**
  * The profile card and the tiles around it as a constellation (physics in constellationPhysics.ts): lines
- * run between them, with small pulses travelling along, and every tile can be grabbed, dragged and
- * thrown; it swings back to its place and pulls its neighbours along a little. A mouse moving over the
+ * run from the circle to each tile, with small pulses travelling along, and every tile can be grabbed, dragged and
+ * thrown; it swings back to its place. A mouse moving over the
  * section shifts the tiles against it, each by its own depth. The tiles stay in the
  * grid (layout, reading order, pre-rendered page); only their offset from there moves. The lines are
  * drawn on a canvas behind the cards, so they show in the gaps.
@@ -33,21 +33,8 @@ export function Constellation({ area }: { area: RefObject<HTMLElement> }) {
             // Grid places (layout boxes: the offsets, the fade-in and the hover don't count; the cards'
             // offset parent is the container).
             homes = cards.map((card) => ({ x: card.offsetLeft, y: card.offsetTop, w: card.offsetWidth, h: card.offsetHeight }));
-            // Lines: every tile to the profile card, and to the tiles right next to it (sharing an edge
-            // across a gap, side by side or one above the other).
-            const links: [number, number][] = [];
-            const next = (a: Box, b: Box) => {
-                const overlapX = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
-                const overlapY = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
-                const gapX = Math.max(a.x, b.x) - Math.min(a.x + a.w, b.x + b.w);
-                const gapY = Math.max(a.y, b.y) - Math.min(a.y + a.h, b.y + b.h);
-                return (overlapX > Math.min(a.w, b.w) / 2 && gapY >= 0 && gapY < 60) || (overlapY > Math.min(a.h, b.h) / 2 && gapX >= 0 && gapX < 60);
-            };
-            homes.forEach((home, i) => {
-                if (i === 0) return;
-                links.push([0, i]);
-                for (let j = 1; j < i; j++) if (next(homes[j], home)) links.push([j, i]);
-            });
+            // Lines: every tile to the profile circle (the tiles themselves aren't tied together).
+            const links = homes.slice(1).map((_, k) => [0, k + 1] as [number, number]);
             const previous = sim;
             sim = new ConstellationSim(cards.length, links);
             sim.nodes = previous.nodes;

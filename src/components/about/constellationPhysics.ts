@@ -4,7 +4,7 @@
  * Each tile hangs on a spring from its place in the grid (its offset from there is what moves) and is
  * tied to its neighbours by the lines between them: springs that want the two offsets equal, so a tile
  * pulled away drags its neighbours a little along. Node 0 is the profile card, which stays put. At rest
- * the tiles drift a little, like stars. A held tile follows the pointer; let go, it keeps its speed and
+ * the tiles float a little, like stars. A held tile follows the pointer; let go, it keeps its speed and
  * swings back. Tilt and squash are loose springs too, so a tile jiggles like jelly when it's picked up,
  * pulled around or stopped.
  *
@@ -16,7 +16,7 @@ export const DT = 1 / 120;
 const HOME = 60;       // spring back to the grid place (1/s²)
 const LINK = 18;       // springs along the lines
 const DAMPING = 5.5;   // underdamped: it swings back past its place once or twice
-const DRIFT = 3;       // px of drifting at rest
+const DRIFT = 7;       // px of floating at rest
 const PARALLAX = 26;   // px the nearest tile shifts with the pointer at the section's edge
 
 export interface Node {
@@ -50,8 +50,8 @@ export class ConstellationSim {
         n.forEach((node, i) => {
             if (i === 0) return;
             const depth = this.depths[i] * PARALLAX;
-            const driftX = Math.sin(this.time * 0.5 + i * 2.1) * DRIFT - this.look.x * depth;
-            const driftY = Math.cos(this.time * 0.37 + i * 1.3) * DRIFT - this.look.y * depth;
+            const driftX = Math.sin(this.time * 0.42 + i * 2.1) * DRIFT - this.look.x * depth;
+            const driftY = Math.cos(this.time * 0.31 + i * 1.3) * DRIFT - this.look.y * depth;
             ax[i] += HOME * (driftX - node.x) - DAMPING * node.vx;
             ay[i] += HOME * (driftY - node.y) - DAMPING * node.vy;
         });

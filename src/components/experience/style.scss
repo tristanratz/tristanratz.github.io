@@ -323,6 +323,12 @@
   &.leaving { opacity: 0; }
 }
 @keyframes regattaIn { from { opacity: 0; } }
+// With the timeline over it ("both"), the regatta steps back so the text reads well.
+.experience:not(.regattaOnly) {
+  .regatta { opacity: 0.45; }
+  .regattaWater { opacity: 0.35; }
+}
+.experience .regatta.leaving, .experience .regattaWater.leaving { opacity: 0; }
 
 // Regatta alone: title and timeline step aside (keeping their place, so the sea keeps its size).
 .experience .container { transition: opacity 0.5s ease, visibility 0.5s; }
