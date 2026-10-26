@@ -352,14 +352,18 @@
   animation-duration: 0.5s;
   animation-timing-function: cubic-bezier(0.2, 0.75, 0.15, 1);
 }
-::view-transition-group(project-card) {
+// The surface is clipped on the image pair (the group's own animation moves and sizes it); it carries
+// the shadow, since shadows inside the snapshots would be clipped (the card and the dialog drop theirs
+// for the morph).
+::view-transition-image-pair(project-card) {
+  isolation: auto;
   overflow: clip;
   border-radius: var(--radius);
   // Card and dialog share this surface (white in both themes, see $widgets in global.scss): it stays
   // opaque while their contents cross-fade on top, so the page never shows through the moving box.
   background: #fff;
+  box-shadow: var(--shadow);
 }
-::view-transition-image-pair(project-card) { isolation: auto; }
 ::view-transition-old(project-card),
 ::view-transition-new(project-card) {
   height: 100%;
@@ -367,12 +371,28 @@
   object-position: top;
   mix-blend-mode: normal;
 }
-::view-transition-old(project-card) { animation: vtOut 0.18s ease-out both; }
+// The old content goes almost at once (stretched, its title would ghost over the new one).
+::view-transition-old(project-card) { animation: vtOut 0.08s ease-out both; }
 ::view-transition-new(project-card) { animation: vtIn 0.3s 0.14s ease-out both; }
+html[data-project-morph] {
+  .projectCard.active { box-shadow: none; }
+  dialog.modal.morph { box-shadow: none; }
+}
 
-::view-transition-group(project-image) {
+// The image's corners change too: in the card only its top ones are round (the card's), in the dialog
+// all four.
+::view-transition-image-pair(project-image) {
   overflow: clip;
-  border-radius: 14px;
+  animation: projectImageOpen 0.5s cubic-bezier(0.2, 0.75, 0.15, 1) both;
+}
+html[data-project-morph="close"]::view-transition-image-pair(project-image) { animation-name: projectImageClose; }
+@keyframes projectImageOpen {
+  from { border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; }
+  to { border-radius: 14px; }
+}
+@keyframes projectImageClose {
+  from { border-radius: 14px; }
+  to { border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0; }
 }
 ::view-transition-old(project-image),
 ::view-transition-new(project-image) {

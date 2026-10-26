@@ -109,9 +109,15 @@
     border: 1px solid var(--line);
     background: var(--surface);
     box-shadow: var(--shadow);
-    animation: menuIn 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
-    &[hidden] { display: none; } // display: grid would otherwise keep it visible
-    // Bridges the gap to the button, so moving the pointer down doesn't close it.
+    // Closed: shrunk into the button's corner, faded; it unfolds from there (and folds back).
+    transform-origin: calc(100% - 20px) -8px;
+    opacity: 0;
+    scale: 0.6;
+    translate: 0 -6px;
+    filter: blur(4px);
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.18s ease, scale 0.22s cubic-bezier(0.4, 0, 0.6, 1), translate 0.22s, filter 0.18s, visibility 0s 0.22s;
     &::before { content: ""; position: absolute; inset: -10px 0 auto; height: 10px; }
 
     a, button {
@@ -130,12 +136,39 @@
       cursor: pointer;
       svg { font-size: 1.05rem; color: var(--accent); }
       &:hover, &:focus-visible { background: var(--accent-soft); }
+      // The entries slide in after the panel, one after the other.
+      opacity: 0;
+      translate: 0 -6px;
+      transition: opacity 0.15s, translate 0.15s, background 0.15s;
+      @for $i from 1 through 4 {
+        &:nth-child(#{$i}) { --i: #{$i}; }
+      }
+    }
+  }
+
+  .menuButton svg { transition: rotate 0.35s cubic-bezier(0.3, 1.4, 0.5, 1); }
+
+  &.open {
+    .menuButton svg { rotate: 90deg; }
+    .menuPanel {
+      opacity: 1;
+      scale: 1;
+      translate: 0 0;
+      filter: none;
+      visibility: visible;
+      pointer-events: auto;
+      // A little overshoot, like it springs open.
+      transition: opacity 0.2s ease, scale 0.38s cubic-bezier(0.3, 1.45, 0.5, 1), translate 0.38s cubic-bezier(0.3, 1.45, 0.5, 1), filter 0.2s, visibility 0s;
+      a, button {
+        opacity: 1;
+        translate: 0 0;
+        transition: opacity 0.25s calc(0.06s + var(--i) * 0.05s), translate 0.3s calc(0.06s + var(--i) * 0.05s) cubic-bezier(0.2, 0.8, 0.2, 1), background 0.15s;
+      }
     }
   }
 }
-@keyframes menuIn { from { opacity: 0; translate: 0 -4px; } }
 @media (prefers-reduced-motion: reduce) {
-  .headerMenu .menuPanel { animation: none; }
+  .headerMenu .menuPanel, .headerMenu .menuPanel a, .headerMenu .menuPanel button, .headerMenu .menuButton svg { transition: none !important; scale: none; translate: none; filter: none; }
 }
 
 // Dims the page behind the search overlay; clicking it closes the search.

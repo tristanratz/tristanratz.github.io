@@ -124,7 +124,8 @@ export function Projects() {
     // and size), grows into the article card while the content fades in, and shrinks back into the node
     // (wherever it floats by then) when closed. Plain Web Animations, so it works in every browser.
     const morphFromNode = (i: number, direction: "open" | "close") => {
-        const dialog = document.querySelector<HTMLDialogElement>("dialog.modal.pullable");
+        // This section's dialog (the profile has one of its own).
+        const dialog = sectionRef.current?.querySelector<HTMLDialogElement>("dialog.modal");
         const thumb = document.querySelector<HTMLElement>(`[data-map-point="${i}"] .thumb`);
         const content = dialog?.querySelector<HTMLElement>(".modalInner");
         if (!dialog || !thumb || !content || prefersReducedMotion()) return null;
@@ -158,6 +159,12 @@ export function Projects() {
         if (open === null) document.querySelectorAll<HTMLElement>(".mapPoint .thumb").forEach((t) => { t.style.visibility = ""; });
     }, [open]);
 
+    // Which way the card morphs (data-project-morph, for the image's corners and the shadows in style.scss).
+    const markMorph = (transition: ViewTransition, direction: "open" | "close") => {
+        document.documentElement.dataset.projectMorph = direction;
+        transition.finished.finally(() => { delete document.documentElement.dataset.projectMorph; });
+        return transition;
+    };
     // Card and detail view share element names, so the card morphs into the dialog and back.
     const openProject = (i: number) => {
         if (view === "map") {
@@ -167,7 +174,7 @@ export function Projects() {
         }
         if (!canMorph) return setOpen(i);
         flushSync(() => setMorphing(i));
-        document.startViewTransition(() => flushSync(() => { setMorphing(null); setOpen(i); }));
+        markMorph(document.startViewTransition(() => flushSync(() => { setMorphing(null); setOpen(i); })), "open");
     };
     const closeProject = () => {
         if (open === null) return;
@@ -182,7 +189,7 @@ export function Projects() {
                 // Close first (synchronously), then drop the animations; the other way round the full
                 // dialog would flash up for a frame.
                 flushSync(() => setOpen(null));
-                document.querySelector("dialog.modal.pullable")?.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+                sectionRef.current?.querySelector("dialog.modal")?.getAnimations({ subtree: true }).forEach((a) => a.cancel());
                 document.querySelectorAll<HTMLElement>(".mapPoint .thumb").forEach((t) => { t.style.visibility = ""; });
             };
             animation.finished.then(finish, finish);
@@ -191,7 +198,7 @@ export function Projects() {
         }
         if (!canMorph) return setOpen(null);
         const i = open;
-        document.startViewTransition(() => flushSync(() => { setOpen(null); setMorphing(i); }))
+        markMorph(document.startViewTransition(() => flushSync(() => { setOpen(null); setMorphing(i); })), "close")
             .finished.finally(() => setMorphing(null));
     };
 

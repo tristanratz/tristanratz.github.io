@@ -6,7 +6,8 @@ import { routePath, useRoute } from "../../router";
 
 /**
  * The header's small settings menu: language and colour theme. Opens on click, and on hover where
- * there is one; closes on Escape, a click elsewhere, or when the pointer has left it for a moment.
+ * there is one; closes on Escape, a click elsewhere, or when the pointer has left it for a moment. It
+ * unfolds from its button, the entries following one after the other.
  */
 export function HeaderMenu() {
     const ui = useUi();
@@ -54,7 +55,8 @@ export function HeaderMenu() {
                     aria-label={ui.menu.label} title={ui.menu.label} onClick={onClick}>
                 <IoEllipsisHorizontal />
             </button>
-            <div className="menuPanel" id="headerMenu" role="group" aria-label={ui.menu.label} hidden={!open}>
+            {/* Stays in the page so it can animate closed too; closed it's inert (no focus, no clicks). */}
+            <div className="menuPanel" id="headerMenu" role="group" aria-label={ui.menu.label} {...(!open && { inert: "" })}>
                 <a href={routePath({ ...route, lang: other })} hrefLang={other} lang={other} title={ui.language.label}>
                     <IoLanguageOutline /> {ui.language.switchTo}
                 </a>
