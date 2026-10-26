@@ -54,6 +54,7 @@ const en = {
         qualities: "Qualities",
         technologies: "Technologies",
         interests: "Interests",
+        readMore: "Read more",
     },
     experience: {
         eyebrow: "Experience", title: ["The path ", "so far"],
@@ -171,6 +172,7 @@ const de: Strings = {
         qualities: "Eigenschaften",
         technologies: "Technologien",
         interests: "Interessen",
+        readMore: "Weiterlesen",
     },
     experience: {
         eyebrow: "Werdegang", title: ["Der bisherige ", "Weg"],

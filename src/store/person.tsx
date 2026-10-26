@@ -53,7 +53,7 @@ export const person: Person = {
     state: "Hesse",
     country: "Germany",
     favTec: ["LLMs", "RAG", "Search", "Python", "PyTorch", "TypeScript", "React", "AWS", "GCP"],
-    qualities: ["team player", "analytical", "curious", "fast learner"],
+    qualities: ["team player", "high energy", "analytical", "curious", "fast learner"],
     interests: ["Large Language Models", "Retrieval Augmented Generation", "Search & Knowledge", "Human-centered AI"],
     about: [
         "At Serviceware, I manage the **teams around AI, search and knowledge** of the **AI-native Serviceware Platform**. We are working on the **future of AI-native Enterprise Service Management (ESM)** and, with **Agent Hub**, redefining the way people work in the service industry.",
@@ -83,7 +83,7 @@ const german: Partial<Omit<Person, "path">> & { path: Partial<Person["path"][num
         {name: "Französisch", level: "B1–B2"},
     ],
     slogan: "KI-Integration sollte nur ein Mittel zu besserer UX sein",
-    qualities: ["Teamplayer", "analytisch", "neugierig", "lernt schnell"],
+    qualities: ["Teamplayer", "voller Energie", "analytisch", "neugierig", "lernt schnell"],
     interests: ["Große Sprachmodelle", "Retrieval Augmented Generation", "Suche & Wissen", "Menschzentrierte KI"],
     about: [
         "Bei Serviceware verantworte ich die **Teams rund um KI, Suche und Wissen** der **KI-nativen Serviceware Platform**. Wir arbeiten an der **Zukunft des KI-nativen Enterprise Service Management (ESM)** und definieren mit **Agent Hub** neu, wie Menschen in der Service-Branche arbeiten.",

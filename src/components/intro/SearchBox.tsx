@@ -49,6 +49,7 @@ function follow(doc: Doc) {
         window.dispatchEvent(new Event("search:navigate"));
         const target = document.getElementById(action.id);
         if (!target) return;
+        target.dispatchEvent(new Event("search:reveal")); // e.g. opens the collapsed profile text
         target.scrollIntoView({ behavior: "smooth", block: "center" });
         target.classList.remove("searchHighlight");
         void target.offsetWidth; // restart the highlight animation
