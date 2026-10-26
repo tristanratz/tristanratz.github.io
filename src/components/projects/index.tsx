@@ -1,12 +1,13 @@
 import { CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { IoArrowBack, IoArrowForward, IoLink, IoLogoGithub, IoShuffle } from "react-icons/io5";
+import { IoArrowBack, IoArrowForward, IoLink, IoLogoGithub, IoPlanetOutline, IoShuffle } from "react-icons/io5";
 import { isBrowser, prefersReducedMotion } from "../../env";
 import { useUi } from "../../i18n";
 import { useRoute } from "../../router";
 import { getProjects, ProjectData } from "../../store/projects";
 import { Modal } from "../modal";
 import { ProjectMap } from "./ProjectMap";
+import { ProjectPile } from "./ProjectPile";
 import "./style.scss";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -45,7 +46,38 @@ export function Projects() {
         // The choice used to be remembered; forget it where it still is.
         try { localStorage.removeItem("projectView"); } catch { /* storage unavailable */ }
     }, []);
-    const chooseView = setView;
+    // Gravity (carousel only): the carousel breaks apart into a pile to play with (shuffling shakes it),
+    // and is put back together when switched off; the carousel stays in the page, invisible, meanwhile.
+    const [gravity, setGravity] = useState<"off" | "on" | "returning">("off");
+    const [shake, setShake] = useState(0);
+    const [cardSize, setCardSize] = useState({ width: 0, height: 0 });
+    const afterReturn = useRef<(() => void) | null>(null);
+    const carouselCards = () => Array.from(trackRef.current?.children ?? [], (card) => card.getBoundingClientRect());
+    const toggleGravity = () => {
+        if (gravity === "on") return setGravity("returning");
+        if (gravity === "returning" || !trackRef.current) return;
+        const card = trackRef.current.children[0] as HTMLElement | undefined;
+        if (!card) return;
+        setCardSize({ width: card.offsetWidth, height: card.offsetHeight });
+        setGravity("on");
+    };
+    const returned = () => {
+        setGravity("off");
+        afterReturn.current?.();
+        afterReturn.current = null;
+    };
+    // The arrows put the carousel back together first, then move.
+    const step = (by: number) => {
+        if (gravity === "off") return go(active + by);
+        afterReturn.current = () => go(active + by);
+        if (gravity === "on") setGravity("returning");
+    };
+    // "Carousel" while the pile is out puts it back together; the map just replaces it.
+    const chooseView = (next: "carousel" | "map") => {
+        if (next === "carousel" && view === "carousel") return gravity === "on" && setGravity("returning");
+        setView(next);
+        setGravity("off");
+    };
     const setOpen = (i: number | null) =>
         navigate({ ...route, project: i === null ? null : projects[i].slug }, { replace: i === null });
     // The card currently carrying the shared-element names (only during a transition).
@@ -239,13 +271,18 @@ export function Projects() {
 
             {view === "map" && <ProjectMap projects={projects} onOpen={openProject} onFocus={setActive} />}
 
-            <div className="track" ref={trackRef} tabIndex={0} aria-label={ui.region} role="region" hidden={view === "map"}>
+            <div className="trackArea">
+            {view === "carousel" && gravity !== "off" && (
+                <ProjectPile projects={projects} carousel={carouselCards} base={cardSize} active={active} onOpen={openProject}
+                             shake={shake} returning={gravity === "returning"} onReturned={returned} morphing={morphing} />
+            )}
+            <div className={"track" + (gravity !== "off" ? " underPile" : "")} ref={trackRef} tabIndex={0} aria-label={ui.region} role="region" hidden={view === "map"}>
                 {projects.map((p, i) => (
                     <article key={i} className={"projectCard" + (i === active ? " active" : "")}
-                             style={vt("project-card", morphing === i)}
+                             style={vt("project-card", morphing === i && gravity === "off")}
                              onClick={() => (i === active ? openProject(i) : go(i))}>
                         <div className="cardImage"
-                             style={{ backgroundImage: image(i), ...vt("project-image", morphing === i) }}>
+                             style={{ backgroundImage: image(i), ...vt("project-image", morphing === i && gravity === "off") }}>
                             {p.aiImage && <span className="aiLabel">{ui.aiImage}</span>}
                         </div>
                         <div className="cardBody">
@@ -266,14 +303,20 @@ export function Projects() {
                     </article>
                 ))}
             </div>
+            </div>
 
             <div className="projectControls" hidden={view === "map"}>
-                <button className="iconButton" onClick={() => go(active - 1)} aria-label={ui.previous}><IoArrowBack /></button>
+                <button className="iconButton gravityButton" aria-pressed={gravity !== "off"} onClick={toggleGravity}
+                        aria-label={gravity !== "off" ? ui.gravityOff : ui.gravity} title={gravity !== "off" ? ui.gravityOff : ui.gravity}>
+                    <IoPlanetOutline />
+                </button>
+                <button className="iconButton" onClick={() => step(-1)} aria-label={ui.previous}><IoArrowBack /></button>
                 <span className="counter" aria-live="polite">
                     {pad(active + 1)} <span>/ {pad(projects.length)}</span>
                 </span>
-                <button className="iconButton" onClick={() => go(active + 1)} aria-label={ui.next}><IoArrowForward /></button>
-                <button className="iconButton" onClick={shuffle} aria-label={ui.random}><IoShuffle /></button>
+                <button className="iconButton" onClick={() => step(1)} aria-label={ui.next}><IoArrowForward /></button>
+                <button className="iconButton" onClick={gravity === "on" ? () => setShake(shake + 1) : shuffle}
+                        aria-label={gravity === "on" ? ui.shake : ui.random} title={gravity === "on" ? ui.shake : ui.random}><IoShuffle /></button>
             </div>
 
             <Modal open={current !== null} onClose={closeProject} label={current?.name ?? "Project"}
