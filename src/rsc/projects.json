@@ -1,45 +1,61 @@
 [
   {
-    "name": "Semantic Search on this Site (PoC)",
+    "name": "This Website: Redesign 2026",
     "technologies": [
+      "React",
+      "TypeScript",
+      "Vite",
       "Embeddings",
       "Model2Vec",
-      "PCA",
-      "Quantisation",
       "Hybrid Search",
       "BM25",
-      "TypeScript"
+      "Physics Simulation",
+      "View Transitions"
     ],
-    "description": "A proof of concept: multilingual semantic search that runs entirely in your browser, with a static embedding model shrunk from 512 MB to 5 MB, and an honest look at what it adds.",
+    "description": "The redesign of this site: one page in English and German that runs entirely in your browser, with a multilingual semantic search on a model shrunk from 512 MB to 5 MB, a handful of small physics simulations to play with and a few easter eggs for the curious.",
     "text": [
-      "By default, the search box on this site ranks results with BM25, the classic keyword algorithm behind search engines like Elasticsearch. It is fast and tiny, but it only matches words, not meaning, and German questions found nothing because the site is written in English.",
-      "This proof of concept adds semantic search with potion-multilingual-128M, a Model2Vec model by Minish Lab distilled from bge-m3. Instead of running a transformer, it is a static table with one vector per token. Embedding a text means splitting it into tokens with a Unigram tokenizer (the most probable split, found with the Viterbi algorithm), looking up their vectors and averaging them. Tokenizer and model are about 150 lines of TypeScript without any ML library, and everything runs in your browser. No server is involved and no query leaves the page.",
-      "The original table has 500,353 tokens with 256 dimensions each: 512 MB. A build script keeps the 41,605 most probable tokens in Latin script, which covers German, English and other European languages, reduces the vectors to 128 dimensions with PCA and stores them as 8-bit integers. That leaves about 5 MB.",
-      "Every entry the search knows about is embedded once, with title, answer and a short list of English and German keywords as separate vectors. Common words such as \"what\", \"is\" or \"wo\" are removed first, because averaging would let them drown out the words that matter. A query is compared to all entries by cosine similarity, matches below 0.47 are dropped so that nonsense finds nothing, and the rest is fused with the BM25 ranking through weighted reciprocal rank fusion.",
-      "The honest result: on 24 test questions (12 English, 12 German) and 8 nonsense queries, the shrunk model alone found the right answer for 16 questions, with nonsense often scoring as high as real matches. Combined with BM25 it answers 18 of 24 without false hits, exactly as many as the keyword search once it had German keywords. Static embeddings average words and cannot really understand questions, so most of the gain came from the bilingual keywords. Real semantic understanding would need a transformer such as multilingual-e5-small, which also runs in the browser but weighs about 118 MB. It stays a proof of concept: the model only loads once you open the search, which shows “Indexing…” until it is ready and answers by keywords in the meantime."
+      "The 2020 version of this site was a React template that had aged. The redesign keeps React, now with TypeScript and Vite, and is pre-rendered into static pages in English and German, one per project too, so it loads fast and reads well for search engines. There is no backend and no request to third parties: a strict content security policy only allows the site's own files, and everything, including the search, runs in your browser.",
+      "The look is calmer: dark by default, serif headlines, white cards, one accent colour. Motion is meant to explain where things come from. The search grows out of the field in the hero and slides back into it, a project card morphs into its detail view (View Transitions), a point on the similarity map grows into its article, and the slogan at the top is \"generated\" token by token, with a slider to rewind it.",
+      "The search box at the top ranks its answers with BM25, the classic keyword algorithm behind search engines like Elasticsearch, tolerant of typos and explaining why each result came up. It only matches words, not meaning, so the redesign tried more: a multilingual semantic search with potion-multilingual-128M, a Model2Vec model by Minish Lab distilled from bge-m3. It is not a transformer but a table with one vector per token. A text is split with a Unigram tokenizer (the most probable split, found with the Viterbi algorithm), its vectors are looked up and averaged; tokenizer and model are about 150 lines of TypeScript without any ML library, and no query leaves the page.",
+      "The original table has 500,353 tokens with 256 dimensions each, 512 MB. A build script keeps the 41,605 most probable tokens in Latin script, reduces them to 128 dimensions with PCA and stores them as 8-bit integers: about 5 MB, loaded only once you open the search. Every entry is embedded with its title, answer and English and German keywords, common words removed; matches below a cosine similarity of 0.47 are dropped and the rest is fused with the BM25 ranking by weighted reciprocal rank fusion. The same model lays out the similarity map of the projects, at build time.",
+      "The honest result: on 24 test questions (12 English, 12 German) the shrunk model alone found the right answer for 16, and nonsense often scored as high as real matches. Combined with BM25 it answers 18 of 24 without false hits, exactly as many as the keyword search once it had German keywords, so most of the gain came from those. Static embeddings average words and don't really understand questions; that would take a transformer such as multilingual-e5-small, about 118 MB. So the semantic part stays a proof of concept.",
+      "Behind the playful parts are small physics simulations, each kept free of the DOM and covered by tests. The regatta behind the timeline sails with a polar diagram modelled on a keelboat of about eleven metres: the boats beat towards their buoys in tacks, heel with the apparent wind and keep score, and your pointer is the wind, measured in Beaufort. The sea in the contact section is a row of springy water columns in which the message in a bottle floats, can be thrown, and the letter rolls around inside.",
+      "The cyclist on the line at the bottom of the page is a rigid body with contacts at his wheels, saddle and head: he gets back up after a fall, uses lines of text as ledges and splashes into the sea. The tiles around the profile hang on springs. And the gravity button lets the project carousel break apart into a pile of rigid boxes, a small port of Box2D-Lite with friction and stacking, before the cards float back into place.",
+      "Most of it you find by trying things. Grab the bottle, the cyclist or a tile and throw them, look at the bottle box at night, turn up the wind on the regatta, or switch on gravity and shake the pile. If you are short of patience, the search knows where things are."
     ],
     "language": "en",
-    "image": "/img/semantic-search.svg",
+    "image": "/img/redesign.webp",
     "date": "2026",
     "github": "https://github.com/tristanratz/tristanratz.github.io",
-    "link": "/?q=free%20time",
     "keywords": [
+      "Redesign",
+      "Webseite",
       "semantische Suche",
       "Einbettungen",
       "Vektorsuche",
-      "Browser"
+      "Physik",
+      "Simulation",
+      "Easter Eggs",
+      "Animation",
+      "Regatta",
+      "Flaschenpost",
+      "Schwerkraft"
     ],
-    "slug": "semantic-search-poc",
+    "slug": "website-redesign-2026",
     "de": {
-      "description": "Ein Proof of Concept: mehrsprachige semantische Suche, die komplett in deinem Browser läuft, mit einem statischen Embedding-Modell, das von 512 MB auf 5 MB geschrumpft wurde, und ein ehrlicher Blick darauf, was sie bringt.",
+      "description": "Das Redesign dieser Seite: eine Seite auf Deutsch und Englisch, die komplett in deinem Browser läuft, mit einer mehrsprachigen semantischen Suche auf einem von 512 MB auf 5 MB geschrumpften Modell, einer Handvoll kleiner Physiksimulationen zum Spielen und ein paar Easter Eggs für Neugierige.",
       "text": [
-        "Standardmäßig sortiert die Suche auf dieser Seite Treffer mit BM25, dem klassischen Keyword-Algorithmus hinter Suchmaschinen wie Elasticsearch. Er ist schnell und winzig, vergleicht aber nur Wörter, nicht Bedeutung, und deutsche Fragen fanden nichts, weil die Seite auf Englisch geschrieben ist.",
-        "Dieser Proof of Concept ergänzt eine semantische Suche mit potion-multilingual-128M, einem Model2Vec-Modell von Minish Lab, das aus bge-m3 destilliert wurde. Statt eines Transformers ist es eine statische Tabelle mit einem Vektor pro Token. Um einen Text einzubetten, wird er mit einem Unigram-Tokenizer zerlegt (die wahrscheinlichste Zerlegung, gefunden mit dem Viterbi-Algorithmus), die Vektoren werden nachgeschlagen und gemittelt. Tokenizer und Modell sind etwa 150 Zeilen TypeScript ohne ML-Bibliothek, und alles läuft in deinem Browser. Kein Server ist beteiligt, und keine Anfrage verlässt die Seite.",
-        "Die ursprüngliche Tabelle hat 500.353 Tokens mit je 256 Dimensionen: 512 MB. Ein Build-Skript behält die 41.605 wahrscheinlichsten Tokens in lateinischer Schrift, was Deutsch, Englisch und andere europäische Sprachen abdeckt, reduziert die Vektoren per PCA auf 128 Dimensionen und speichert sie als 8-Bit-Ganzzahlen. Übrig bleiben etwa 5 MB.",
-        "Jeder Eintrag, den die Suche kennt, wird einmal eingebettet, mit Titel, Antwort und einer kurzen Liste englischer und deutscher Stichwörter als getrennten Vektoren. Häufige Wörter wie „what“, „is“ oder „wo“ werden vorher entfernt, weil sie beim Mitteln die wichtigen Wörter übertönen würden. Eine Anfrage wird per Kosinus-Ähnlichkeit mit allen Einträgen verglichen, Treffer unter 0,47 fallen weg, damit Unsinn nichts findet, und der Rest wird per gewichteter Reciprocal Rank Fusion mit der BM25-Rangfolge kombiniert.",
-        "Das ehrliche Ergebnis: Bei 24 Testfragen (12 englisch, 12 deutsch) und 8 Unsinnsanfragen fand das geschrumpfte Modell allein für 16 Fragen die richtige Antwort, und Unsinn erreichte oft ähnliche Werte wie echte Treffer. Zusammen mit BM25 beantwortet es 18 von 24 ohne Fehltreffer, genau so viele wie die Keyword-Suche, sobald sie deutsche Stichwörter hatte. Statische Embeddings mitteln Wörter und verstehen Fragen nicht wirklich, der größte Gewinn kam also von den zweisprachigen Stichwörtern. Echtes semantisches Verständnis bräuchte einen Transformer wie multilingual-e5-small, der ebenfalls im Browser läuft, aber etwa 118 MB groß ist. Es bleibt ein Proof of Concept: Das Modell lädt erst, wenn du die Suche öffnest. Bis es bereit ist, zeigt sie „Indexiere…“ und antwortet solange per Stichwort."
+        "Die Version dieser Seite von 2020 war ein React-Template, das in die Jahre gekommen war. Das Redesign bleibt bei React, jetzt mit TypeScript und Vite, und wird zu statischen Seiten auf Deutsch und Englisch vorgerendert, auch eine pro Projekt, damit sie schnell lädt und für Suchmaschinen gut lesbar ist. Es gibt kein Backend und keine Anfragen an Dritte: Eine strenge Content Security Policy erlaubt nur die eigenen Dateien der Seite, und alles, auch die Suche, läuft in deinem Browser.",
+        "Der Look ist ruhiger: standardmäßig dunkel, Serifen-Überschriften, weiße Karten, eine Akzentfarbe. Bewegung soll zeigen, woher etwas kommt. Die Suche wächst aus dem Feld oben heraus und gleitet wieder hinein, eine Projektkarte verwandelt sich in ihre Detailansicht (View Transitions), ein Punkt auf der Ähnlichkeitskarte wächst zu seinem Artikel, und der Slogan oben wird Token für Token „generiert“, mit einem Regler zum Zurückspulen.",
+        "Das Suchfeld oben sortiert seine Antworten mit BM25, dem klassischen Keyword-Algorithmus hinter Suchmaschinen wie Elasticsearch, tolerant gegenüber Tippfehlern und mit einer Erklärung, warum ein Treffer kam. Es vergleicht nur Wörter, nicht Bedeutung, also hat das Redesign mehr versucht: eine mehrsprachige semantische Suche mit potion-multilingual-128M, einem Model2Vec-Modell von Minish Lab, das aus bge-m3 destilliert wurde. Es ist kein Transformer, sondern eine Tabelle mit einem Vektor pro Token. Ein Text wird mit einem Unigram-Tokenizer zerlegt (die wahrscheinlichste Zerlegung, gefunden mit dem Viterbi-Algorithmus), seine Vektoren werden nachgeschlagen und gemittelt; Tokenizer und Modell sind etwa 150 Zeilen TypeScript ohne ML-Bibliothek, und keine Anfrage verlässt die Seite.",
+        "Die ursprüngliche Tabelle hat 500.353 Tokens mit je 256 Dimensionen, 512 MB. Ein Build-Skript behält die 41.605 wahrscheinlichsten Tokens in lateinischer Schrift, reduziert sie per PCA auf 128 Dimensionen und speichert sie als 8-Bit-Ganzzahlen: etwa 5 MB, die erst laden, wenn du die Suche öffnest. Jeder Eintrag wird mit Titel, Antwort und englischen und deutschen Stichwörtern eingebettet, häufige Wörter entfernt; Treffer unter einer Kosinus-Ähnlichkeit von 0,47 fallen weg, und der Rest wird per gewichteter Reciprocal Rank Fusion mit der BM25-Rangfolge kombiniert. Dasselbe Modell legt beim Bauen der Seite auch die Ähnlichkeitskarte der Projekte an.",
+        "Das ehrliche Ergebnis: Bei 24 Testfragen (12 englisch, 12 deutsch) fand das geschrumpfte Modell allein für 16 die richtige Antwort, und Unsinn erreichte oft ähnliche Werte wie echte Treffer. Zusammen mit BM25 beantwortet es 18 von 24 ohne Fehltreffer, genau so viele wie die Keyword-Suche, sobald sie deutsche Stichwörter hatte; der größte Gewinn kam also von diesen. Statische Embeddings mitteln Wörter und verstehen Fragen nicht wirklich, dafür bräuchte es einen Transformer wie multilingual-e5-small, etwa 118 MB. Der semantische Teil bleibt deshalb ein Proof of Concept.",
+        "Hinter den verspielten Teilen stecken kleine Physiksimulationen, jede ohne DOM und mit Tests abgedeckt. Die Regatta hinter der Zeitleiste segelt nach einem Polardiagramm, das einem etwa elf Meter langen Kielboot nachempfunden ist: Die Boote kreuzen zu ihren Bojen, krängen mit dem scheinbaren Wind und zählen Punkte, und dein Mauszeiger ist der Wind, gemessen in Beaufort. Das Meer im Kontaktbereich ist eine Reihe federnder Wassersäulen, in denen die Flaschenpost schwimmt, sich werfen lässt und der Brief darin herumrollt.",
+        "Der Radfahrer auf der untersten Linie der Seite ist ein starrer Körper mit Kontakten an Rädern, Sattel und Kopf: Er steht nach einem Sturz wieder auf, nutzt Textzeilen als Vorsprünge und platscht ins Meer. Die Kacheln um das Profil hängen an Federn. Und der Schwerkraft-Knopf lässt das Projekt-Karussell zu einem Haufen starrer Kisten zerfallen, eine kleine Portierung von Box2D-Lite mit Reibung und Stapeln, bevor die Karten zurück an ihren Platz schweben.",
+        "Das meiste findest du durch Ausprobieren. Greif die Flasche, den Radfahrer oder eine Kachel und wirf sie, schau nachts in die Flaschenpost-Box, dreh bei der Regatta den Wind auf, oder schalte die Schwerkraft ein und schüttle den Haufen. Wem die Geduld fehlt: Die Suche weiß, wo was ist."
       ]
-    }
+    },
+    "link": "/?q=free%20time"
   },
   {
     "name": "Paper: On the Role of Summary Content Units in Text Summarization Evaluation",

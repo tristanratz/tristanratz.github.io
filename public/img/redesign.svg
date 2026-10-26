@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000">
+  <!-- This site's redesign in one picture: the regatta and its wind, the profile among its tiles,
+       the carousel breaking apart, the cyclist thrown off the footer line, the bottle in the sea. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="80%">
+      <stop offset="0" stop-color="#1c2a40"/>
+      <stop offset="1" stop-color="#0b0f15"/>
+    </radialGradient>
+    <radialGradient id="wind" r="50%">
+      <stop offset="0" stop-color="#bcd4ff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#bcd4ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7f9fd0" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#7f9fd0" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="photo1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2b3d5c"/><stop offset="1" stop-color="#5a7db0"/>
+    </linearGradient>
+    <linearGradient id="photo2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3f9d6b"/><stop offset="1" stop-color="#1f4d3c"/>
+    </linearGradient>
+    <linearGradient id="photo3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e08f56"/><stop offset="1" stop-color="#8a4d33"/>
+    </linearGradient>
+    <linearGradient id="photo4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8a74c4"/><stop offset="1" stop-color="#3d3166"/>
+    </linearGradient>
+    <!-- A boat from above, as on the scoreboard -->
+    <path id="hull" d="M18 0C15 -4.2 8 -6.8 -2 -7.2L-14.5 -6.4Q-15.4 0 -14.5 6.4L-2 7.2C8 6.8 15 4.2 18 0Z"/>
+    <!-- A carousel card: image (added per card), year, title, technologies, "read more" -->
+    <path id="cardImage" d="M-80 -5 V-91 a14 14 0 0 1 14 -14 H66 a14 14 0 0 1 14 14 V-5 Z"/>
+    <g id="card">
+      <rect x="-80" y="-105" width="160" height="210" rx="14" fill="#ffffff"/>
+      <rect x="-66" y="8" width="22" height="4" rx="2" fill="#9aa6b8"/>
+      <rect x="-66" y="20" width="118" height="9" rx="3" fill="#1b2433"/>
+      <rect x="-66" y="35" width="84" height="9" rx="3" fill="#1b2433"/>
+      <rect x="-66" y="54" width="100" height="4" rx="2" fill="#b6c0cf"/>
+      <rect x="-66" y="78" width="46" height="15" rx="7.5" fill="#1b2433"/>
+      <circle cx="52" cy="85.5" r="7.5" fill="none" stroke="#c9d1dc" stroke-width="1.5"/>
+    </g>
+  </defs>
+
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+
+  <!-- Faint stars / network in the background -->
+  <g fill="#9bb8e3" opacity="0.35">
+    <circle cx="120" cy="70" r="2"/><circle cx="530" cy="60" r="1.5"/><circle cx="980" cy="90" r="2"/><circle cx="1500" cy="70" r="1.5"/>
+    <circle cx="1560" cy="300" r="2"/><circle cx="60" cy="560" r="1.5"/><circle cx="700" cy="120" r="1.5"/><circle cx="1180" cy="40" r="2"/>
+  </g>
+
+  <!-- Regatta: the pointer is the wind, with its Beaufort rings; boats beat towards their buoys -->
+  <circle cx="250" cy="280" r="190" fill="url(#wind)"/>
+  <g fill="none" stroke="#9bb8e3" stroke-width="2" stroke-dasharray="3 9" stroke-linecap="round" opacity="0.7">
+    <circle cx="250" cy="280" r="60"/><circle cx="250" cy="280" r="115"/><circle cx="250" cy="280" r="180"/>
+  </g>
+  <g font-family="Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#9bb8e3">
+    <text x="292" y="232">8 Bft</text><text x="333" y="190">5 Bft</text><text x="378" y="140">3 Bft</text>
+  </g>
+  <!-- the cursor -->
+  <path d="M250 280 L250 312 L259 303 L266 319 L273 316 L266 300 L279 300 Z" fill="#ffffff" stroke="#0b0f15" stroke-width="2" stroke-linejoin="round"/>
+  <!-- boats with wakes, heeled away from the wind -->
+  <g transform="translate(120 440) rotate(-40) scale(2.6)">
+    <path d="M-15 -2 Q-24 -5 -31 -9 M-15 2 Q-24 5 -31 9" stroke="#9bb8e3" stroke-width="0.7" opacity="0.4" fill="none"/>
+    <use href="#hull" fill="#5a7db0"/><use href="#hull" fill="#ffffff" transform="scale(0.8 0.62)"/>
+    <path d="M5 0Q-3 4.5 -13 5L5 0Z" fill="#5a7db0" fill-opacity="0.35" stroke="#5a7db0" stroke-width="0.8"/>
+  </g>
+  <g transform="translate(420 380) rotate(-130) scale(2.3)">
+    <path d="M-15 -2 Q-24 -5 -31 -9 M-15 2 Q-24 5 -31 9" stroke="#9bb8e3" stroke-width="0.7" opacity="0.4" fill="none"/>
+    <use href="#hull" fill="#3f9d6b"/><use href="#hull" fill="#ffffff" transform="scale(0.8 0.62)"/>
+    <path d="M5 0Q-3 -4.5 -13 -5L5 0Z" fill="#3f9d6b" fill-opacity="0.35" stroke="#3f9d6b" stroke-width="0.8"/>
+  </g>
+  <g transform="translate(110 150) rotate(30) scale(2.2)">
+    <path d="M-15 -2 Q-24 -5 -31 -9 M-15 2 Q-24 5 -31 9" stroke="#9bb8e3" stroke-width="0.7" opacity="0.4" fill="none"/>
+    <use href="#hull" fill="#e08f56"/><use href="#hull" fill="#ffffff" transform="scale(0.8 0.62)"/>
+    <path d="M5 0Q-3 4.5 -13 5L5 0Z" fill="#e08f56" fill-opacity="0.35" stroke="#e08f56" stroke-width="0.8"/>
+  </g>
+  <!-- buoys -->
+  <g stroke="#ffffff" stroke-width="2.5">
+    <circle cx="460" cy="560" r="9" fill="#5a7db0"/><circle cx="60" cy="300" r="9" fill="#3f9d6b"/><circle cx="420" cy="80" r="9" fill="#e08f56"/>
+  </g>
+
+  <!-- About: the profile circle, the portrait sticking out, links under its edge, tiles on lines -->
+  <g stroke="#9bb8e3" stroke-width="2" opacity="0.55">
+    <line x1="800" y1="430" x2="590" y2="290"/><line x1="800" y1="430" x2="575" y2="560"/>
+    <line x1="800" y1="430" x2="1010" y2="290"/><line x1="800" y1="430" x2="1025" y2="560"/>
+  </g>
+  <g fill="#9bb8e3"><circle cx="680" cy="350" r="4"/><circle cx="912" cy="365" r="4"/><circle cx="700" cy="492" r="4"/></g>
+  <g>
+    <rect x="530" y="240" width="120" height="100" rx="14" fill="#ffffff" transform="rotate(-6 590 290)"/>
+    <rect x="515" y="512" width="120" height="100" rx="14" fill="#ffffff" transform="rotate(5 575 562)"/>
+    <rect x="950" y="240" width="120" height="100" rx="14" fill="#ffffff" transform="rotate(4 1010 290)"/>
+    <rect x="965" y="510" width="120" height="100" rx="14" fill="#ffffff" transform="rotate(-5 1025 560)"/>
+    <g fill="none" stroke="#5a7db0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M590 262 c-9 0 -14 6 -14 13 c0 9 14 22 14 22 s14 -13 14 -22 c0 -7 -5 -13 -14 -13 z"/>
+      <rect x="560" y="545" width="30" height="22" rx="4"/><path d="M568 545 v-5 h14 v5"/>
+      <path d="M1010 262 l5 11 12 1 -9 8 3 12 -11 -6 -11 6 3 -12 -9 -8 12 -1 z"/>
+      <path d="M1009 560 a16 14 0 1 1 8 12 l-10 4 3 -8"/>
+    </g>
+    <g fill="#c9d1dc">
+      <rect x="560" y="310" width="60" height="5" rx="2.5" transform="rotate(-6 590 290)"/>
+      <rect x="545" y="580" width="60" height="5" rx="2.5" transform="rotate(5 575 562)"/>
+      <rect x="980" y="310" width="60" height="5" rx="2.5" transform="rotate(4 1010 290)"/>
+      <rect x="995" y="580" width="60" height="5" rx="2.5" transform="rotate(-5 1025 560)"/>
+    </g>
+  </g>
+  <circle cx="800" cy="430" r="168" fill="#ffffff"/>
+  <circle cx="800" cy="430" r="182" fill="none" stroke="#9bb8e3" stroke-width="2" opacity="0.4"/>
+  <!-- portrait -->
+  <circle cx="800" cy="262" r="56" fill="#ffffff"/>
+  <circle cx="800" cy="262" r="49" fill="#c9d1dc"/>
+  <circle cx="800" cy="248" r="18" fill="#7a8699"/>
+  <path d="M768 300 c4 -22 20 -28 32 -28 s28 6 32 28 a49 49 0 0 1 -64 0 z" fill="#7a8699"/>
+  <!-- name, job, first paragraph, read more -->
+  <rect x="735" y="340" width="130" height="16" rx="5" fill="#1b2433"/>
+  <rect x="742" y="366" width="116" height="6" rx="3" fill="#9aa6b8"/>
+  <g fill="#b6c0cf">
+    <rect x="690" y="392" width="220" height="7" rx="3.5"/><rect x="680" y="408" width="240" height="7" rx="3.5"/>
+    <rect x="682" y="424" width="236" height="7" rx="3.5"/><rect x="690" y="440" width="220" height="7" rx="3.5"/>
+    <rect x="712" y="456" width="176" height="7" rx="3.5"/>
+  </g>
+  <rect x="756" y="484" width="88" height="24" rx="12" fill="none" stroke="#c9d1dc" stroke-width="2"/>
+  <rect x="770" y="493" width="50" height="6" rx="3" fill="#1b2433"/>
+  <g fill="#ffffff" stroke="#c9d1dc" stroke-width="2">
+    <circle cx="726" cy="612" r="13"/><circle cx="762" cy="625" r="13"/><circle cx="800" cy="630" r="13"/><circle cx="838" cy="625" r="13"/><circle cx="874" cy="612" r="13"/>
+  </g>
+
+  <!-- Projects: the carousel breaks apart, its cards fall onto the line and pile up -->
+  <g transform="translate(1260 190) rotate(12)"><use href="#card"/><use href="#cardImage" fill="url(#photo1)"/></g>
+  <g transform="translate(1440 300) rotate(-24)"><use href="#card"/><use href="#cardImage" fill="url(#photo3)"/></g>
+  <g transform="translate(1330 520) rotate(38)"><use href="#card"/><use href="#cardImage" fill="url(#photo4)"/></g>
+  <g transform="translate(1210 665) rotate(-6)"><use href="#card"/><use href="#cardImage" fill="url(#photo2)"/></g>
+  <g transform="translate(1440 668) rotate(4)"><use href="#card"/><use href="#cardImage" fill="url(#photo1)"/></g>
+  <!-- motion streaks -->
+  <g stroke="#9bb8e3" stroke-width="2" stroke-linecap="round" opacity="0.45">
+    <line x1="1250" y1="60" x2="1250" y2="20"/><line x1="1290" y1="70" x2="1290" y2="40"/>
+    <line x1="1440" y1="175" x2="1440" y2="130"/><line x1="1475" y1="180" x2="1475" y2="150"/>
+    <line x1="1330" y1="395" x2="1330" y2="355"/>
+  </g>
+
+  <!-- The footer line, the cyclist thrown off it (arms up), the sea with the bottle -->
+  <line x1="0" y1="772" x2="1600" y2="772" stroke="#9bb8e3" stroke-width="2" opacity="0.5"/>
+  <g transform="translate(330 680) rotate(-18) scale(2.4)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <circle cx="-17" cy="0" r="11" stroke="#9aa6b8" stroke-width="1.6"/>
+    <circle cx="17" cy="0" r="11" stroke="#9aa6b8" stroke-width="1.6"/>
+    <path d="M-17 0 L-2 3 L-7 -21 Z M-7 -21 L12 -19 L11 -12 L-2 3 M12 -19 L17 0" stroke="#9bb8e3" stroke-width="2"/>
+    <path d="M-11 -23 H-3 M12 -19 L14 -24 L19 -23" stroke="#ffffff" stroke-width="2.4"/>
+    <path d="M-6 -27 L6 -42" stroke="#ffffff" stroke-width="3"/>
+    <path d="M6 -42 L10 -55 L13 -67 M6 -42 L1 -55 L-2 -67" stroke="#ffffff" stroke-width="2.2"/>
+    <path d="M-6 -27 L4 -14 L4 3 M-6 -27 L-10 -12 L-8 3" stroke="#ffffff" stroke-width="2.4"/>
+    <circle cx="10" cy="-49" r="4.6" fill="#ffffff"/>
+    <path d="M4.6 -50 A5.6 5.6 0 0 1 15.4 -50" stroke="#9bb8e3" stroke-width="2.6"/>
+  </g>
+  <g fill="#9bb8e3" opacity="0.6">
+    <circle cx="240" cy="742" r="3"/><circle cx="215" cy="754" r="2"/><circle cx="190" cy="762" r="2"/>
+  </g>
+
+  <path d="M0 830 Q 50 815 100 830 T 200 830 T 300 830 T 400 830 T 500 830 T 600 830 T 700 830 T 800 830 T 900 830 T 1000 830 T 1100 830 T 1200 830 T 1300 830 T 1400 830 T 1500 830 T 1600 830 V1000 H0 Z" fill="url(#sea)"/>
+  <path d="M0 830 Q 50 815 100 830 T 200 830 T 300 830 T 400 830 T 500 830 T 600 830 T 700 830 T 800 830 T 900 830 T 1000 830 T 1100 830 T 1200 830 T 1300 830 T 1400 830 T 1500 830 T 1600 830" fill="none" stroke="#9bb8e3" stroke-width="2" opacity="0.6"/>
+  <!-- message in a bottle, half in the water -->
+  <g transform="translate(960 838) rotate(-9) scale(2.1)" stroke-linejoin="round">
+    <path d="M-36 -10 L12 -10 C20 -10 22 -4.5 29 -4.5 L35 -4.5 L35 4.5 L29 4.5 C22 4.5 20 10 12 10 L-36 10 Q-43 10 -43 0 Q-43 -10 -36 -10 Z" fill="#ffffff" fill-opacity="0.85" stroke="#9bb8e3" stroke-width="1.4"/>
+    <rect x="-29" y="-4" width="34" height="9" rx="4.5" fill="#ffffff" stroke="#9bb8e3" stroke-width="1"/>
+    <line x1="-12" y1="-4" x2="-12" y2="5" stroke="#5a7db0" stroke-width="1.6"/>
+    <rect x="37" y="-3.6" width="6" height="7.2" rx="2" fill="#9bb8e3"/>
+  </g>
+  <path d="M760 860 Q 860 845 960 860 T 1160 860" fill="none" stroke="#9bb8e3" stroke-width="1.5" opacity="0.4"/>
+  <g fill="#ffffff" opacity="0.7"><circle cx="905" cy="800" r="3"/><circle cx="1015" cy="806" r="2.5"/><circle cx="930" cy="786" r="2"/></g>
+</svg>
